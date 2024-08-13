@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "sga_evaluacion_docente_mid/routers"
+	_ "github.com/udistrital/sga_evaluacion_docente_mid/routers"
 
 	"github.com/astaxie/beego"
 )
