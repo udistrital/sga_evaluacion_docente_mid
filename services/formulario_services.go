@@ -123,26 +123,25 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 			break
 		}
 	}
-
-	if campoPadre != nil && int(campoPadre["CampoPadreId"].(float64)) == 0 {
+	if campoPadre == nil {
 		hijoInfo := map[string]interface{}{
 			"nombre":     campoPadre["Nombre"].(string),
 			"tipo_campo": int(campoPadre["TipoCampoId"].(float64)),
 			"valor":      campoPadre["Valor"],
 		}
 		hijos = append(hijos, hijoInfo)
-		return hijos
 	}
-
-	for _, campo := range camposData {
-		campoMap := campo.(map[string]interface{})
-		if int(campoMap["CampoPadreId"].(float64)) == campoId {
-			hijoInfo := map[string]interface{}{
-				"nombre":     campoMap["Nombre"].(string),
-				"tipo_campo": int(campoMap["TipoCampoId"].(float64)),
-				"valor":      campoMap["Valor"],
+	if campoPadre != nil {
+		for _, campo := range camposData {
+			campoMap := campo.(map[string]interface{})
+			if int(campoMap["CampoPadreId"].(float64)) == campoId {
+				hijoInfo := map[string]interface{}{
+					"nombre":     campoMap["Nombre"].(string),
+					"tipo_campo": int(campoMap["TipoCampoId"].(float64)),
+					"valor":      campoMap["Valor"],
+				}
+				hijos = append(hijos, hijoInfo)
 			}
-			hijos = append(hijos, hijoInfo)
 		}
 	}
 
