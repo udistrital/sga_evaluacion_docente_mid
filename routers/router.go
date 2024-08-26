@@ -20,6 +20,11 @@ func init() {
 				&controllers.Formulario_por_tipoController{},
 			),
 		),
+		beego.NSNamespace("/respuesta_formulario",
+			beego.NSInclude(
+				&controllers.Respuesta_formularioController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
