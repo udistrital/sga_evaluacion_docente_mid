@@ -39,6 +39,26 @@ paths:
           description: '{}'
         "403":
           description: body is empty
+  /metricas/:
+    post:
+      tags:
+      - metricas
+      description: create MetricasCoevaluacion
+      operationId: MetricasController.Create
+      parameters:
+      - in: body
+        name: body
+        description: body for MetricasCoevaluacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.MetricasCoevaluacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.MetricasCoevaluacion'
+        "403":
+          description: body is empty
   /respuesta_formulario/:
     post:
       tags:
@@ -60,6 +80,15 @@ paths:
         "403":
           description: body is empty
 definitions:
+  models.MetricasAutoevaluacion:
+    title: MetricasAutoevaluacion
+    type: object
+  models.MetricasCoevaluacion:
+    title: MetricasCoevaluacion
+    type: object
+  models.MetricasHeteroevaluacion:
+    title: MetricasHeteroevaluacion
+    type: object
   models.Respuesta_formulario:
     title: Respuesta_formulario
     type: object
@@ -70,3 +99,6 @@ tags:
 - name: respuesta_formulario
   description: |
     Respuesta_formularioController operations for Respuesta_formulario
+- name: metricas
+  description: |
+    MetricasController operations for Metricas
