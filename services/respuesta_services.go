@@ -104,7 +104,6 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 }
 
 func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
-	var nuevoFormulario map[string]interface{}
 	var dataSource map[string]interface{}
 
 	if err := json.Unmarshal(data, &dataSource); err != nil {
@@ -119,19 +118,25 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 
 	dataList, ok := response["Data"].([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("formato de respuesta inesperado: %v", response)
-	}
-	if len(dataList) > 0 {
-		if firstFormulario, ok := dataList[0].(map[string]interface{}); ok {
-			if _, ok := firstFormulario["Id"].(float64); ok {
-				return firstFormulario, nil
-			}
-			return nil, fmt.Errorf("el formulario existente no tiene un ID válido: %v", firstFormulario)
-		}
-		return nil, fmt.Errorf("estructura inesperada en los datos del formulario: %v", dataList[0])
+		return nil, fmt.Errorf("error al convertir los datos a la estructura esperada")
 	}
 
-	nuevoFormulario = map[string]interface{}{
+	for _, item := range dataList {
+		if formulario, ok := item.(map[string]interface{}); ok {
+
+			if formulario["PeriodoId"] == dataSource["id_periodo"] &&
+				formulario["TerceroId"] == dataSource["id_tercero"] &&
+				formulario["EvaluadoId"] == dataSource["id_evaluado"] &&
+				formulario["ProyectoCurricularId"] == dataSource["proyecto_curricular"] &&
+				formulario["EspacioAcademicoId"] == dataSource["espacio_academico"] {
+
+				return formulario, nil
+			}
+		}
+	}
+
+	// Si no encuentra coincidencias, crear un nuevo formulario
+	nuevoFormulario := map[string]interface{}{
 		"Activo":               true,
 		"EspacioAcademicoId":   dataSource["espacio_academico"],
 		"EvaluadoId":           dataSource["id_evaluado"],
@@ -141,21 +146,17 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 		"ProyectoCurricularId": dataSource["proyecto_curricular"],
 		"TerceroId":            dataSource["id_tercero"],
 	}
+	fmt.Println(nuevoFormulario)
+	fmt.Println("--------------------")
 
-	urlPost := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/formulario"
-
-	var createdFormulario map[string]interface{}
-	errCrearFormulario := request.SendJson("POST", urlPost, nuevoFormulario, &createdFormulario)
-	if errCrearFormulario != nil {
-		return nil, fmt.Errorf("error al crear el formulario: %w", errCrearFormulario)
+	errNuevoForm := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
+	if errNuevoForm != nil {
+		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
+	} else {
+		fmt.Println(response["Data"].(map[string]interface{}))
+		return response["Data"].(map[string]interface{}), nil
 	}
 
-	if id, ok := createdFormulario["Id"].(float64); ok {
-		nuevoFormulario["Id"] = int(id)
-		return nuevoFormulario, nil
-	}
-
-	return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v", createdFormulario)
 }
 
 func InactivarFormulario(id int) error {

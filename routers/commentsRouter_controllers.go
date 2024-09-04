@@ -18,17 +18,8 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"],
         beego.ControllerComments{
-            Method: "MetricasHeteroevaluacion",
-            Router: "/",
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"],
-        beego.ControllerComments{
             Method: "MetricasAutoevaluacion",
-            Router: "/",
+            Router: "/Autoevaluacion",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -37,7 +28,16 @@ func init() {
     beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"],
         beego.ControllerComments{
             Method: "MetricasCoevaluacion",
-            Router: "/",
+            Router: "/Coevaluacion",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"],
+        beego.ControllerComments{
+            Method: "MetricasHeteroevaluacion",
+            Router: "/Heteroevaluacion",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,

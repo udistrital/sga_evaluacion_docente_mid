@@ -23,7 +23,7 @@ func (c *MetricasController) URLMapping() {
 // @Param	body		body 	models.MetricasHeteroevaluacion	true		"body for MetricasHeteroevaluacion content"
 // @Success 201 {object} models.MetricasHeteroevaluacion
 // @Failure 403 body is empty
-// @router / [post]
+// @router /Heteroevaluacion [post]
 func (c *MetricasController) MetricasHeteroevaluacion() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
@@ -48,7 +48,7 @@ func (c *MetricasController) MetricasHeteroevaluacion() {
 // @Param	body		body 	models.MetricasAutoevaluacion	true		"body for MetricasAutoevaluacion content"
 // @Success 201 {object} models.MetricasAutoevaluacion
 // @Failure 403 body is empty
-// @router / [post]
+// @router /Autoevaluacion [post]
 func (c *MetricasController) MetricasAutoevaluacion() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
@@ -73,7 +73,7 @@ func (c *MetricasController) MetricasAutoevaluacion() {
 // @Param	body		body 	models.MetricasCoevaluacion	true		"body for MetricasCoevaluacion content"
 // @Success 201 {object} models.MetricasCoevaluacion
 // @Failure 403 body is empty
-// @router / [post]
+// @router /Coevaluacion [post]
 func (c *MetricasController) MetricasCoevaluacion() {
 	defer errorhandler.HandlePanic(&c.Controller)
 

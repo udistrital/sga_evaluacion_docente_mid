@@ -58,7 +58,38 @@
                 }
             }
         },
-        "/metricas/": {
+        "/metricas/Autoevaluacion": {
+            "post": {
+                "tags": [
+                    "metricas"
+                ],
+                "description": "create MetricasAutoevaluacion",
+                "operationId": "MetricasController.Create",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "body for MetricasAutoevaluacion content",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.MetricasAutoevaluacion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.MetricasAutoevaluacion"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/metricas/Coevaluacion": {
             "post": {
                 "tags": [
                     "metricas"
@@ -81,6 +112,37 @@
                         "description": "",
                         "schema": {
                             "$ref": "#/definitions/models.MetricasCoevaluacion"
+                        }
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
+        },
+        "/metricas/Heteroevaluacion": {
+            "post": {
+                "tags": [
+                    "metricas"
+                ],
+                "description": "create MetricasHeteroevaluacion",
+                "operationId": "MetricasController.Create",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "body for MetricasHeteroevaluacion content",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.MetricasHeteroevaluacion"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.MetricasHeteroevaluacion"
                         }
                     },
                     "403": {
