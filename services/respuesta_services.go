@@ -135,7 +135,6 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 		}
 	}
 
-	// Si no encuentra coincidencias, crear un nuevo formulario
 	nuevoFormulario := map[string]interface{}{
 		"Activo":               true,
 		"EspacioAcademicoId":   dataSource["espacio_academico"],
@@ -146,8 +145,6 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 		"ProyectoCurricularId": dataSource["proyecto_curricular"],
 		"TerceroId":            dataSource["id_tercero"],
 	}
-	fmt.Println(nuevoFormulario)
-	fmt.Println("--------------------")
 
 	errNuevoForm := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
 	if errNuevoForm != nil {
