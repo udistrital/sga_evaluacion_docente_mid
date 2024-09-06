@@ -25,6 +25,11 @@ func init() {
 				&controllers.Respuesta_formularioController{},
 			),
 		),
+		beego.NSNamespace("/metricas",
+			beego.NSInclude(
+				&controllers.MetricasController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
