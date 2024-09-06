@@ -39,7 +39,34 @@ paths:
           description: '{}'
         "403":
           description: body is empty
+  /respuesta_formulario/:
+    post:
+      tags:
+      - respuesta_formulario
+      description: create Respuesta_formulario
+      operationId: Respuesta_formularioController.PostRespuestaFormulario
+      parameters:
+      - in: body
+        name: body
+        description: body for Respuesta_formulario content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Respuesta_formulario'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Respuesta_formulario'
+        "403":
+          description: body is empty
+definitions:
+  models.Respuesta_formulario:
+    title: Respuesta_formulario
+    type: object
 tags:
 - name: formulario_por_tipo
   description: |
     Formulario_por_tipoController operations for Formulario_por_tipo
+- name: respuesta_formulario
+  description: |
+    Respuesta_formularioController operations for Respuesta_formulario
