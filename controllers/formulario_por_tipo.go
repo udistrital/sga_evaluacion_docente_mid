@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/services"
 	"github.com/udistrital/utils_oas/errorhandler"
@@ -29,7 +27,6 @@ func (c *Formulario_por_tipoController) URLMapping() {
 // @Failure 403 body is empty
 // @router / [get]
 func (c *Formulario_por_tipoController) GetFormularioTipo() {
-	fmt.Println("Llegó")
 	defer errorhandler.HandlePanic(&c.Controller)
 
 	id_tipo_formulario := c.GetString("id_tipo_formulario")

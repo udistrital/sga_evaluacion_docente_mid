@@ -10,26 +10,22 @@ import (
 )
 
 func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
-	fmt.Println("Entró")
 
 	var plantilla map[string]interface{}
 	errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?query=ProcesoId:%v&Activo:true&sortby=Id&order=asc&limit=0", id_tipo_formulario), &plantilla)
 	if errPlantilla != nil || fmt.Sprintf("%v", plantilla) == "[map[]]" {
-		fmt.Println(plantilla)
 		return helpers.ErrEmiter(errPlantilla, fmt.Sprintf("%v", plantilla))
 	}
 
 	var itemCampos map[string]interface{}
 	errItemCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=Activo:true&sortby=Id&order=asc&limit=0"), &itemCampos)
 	if errItemCampos != nil || fmt.Sprintf("%v", itemCampos) == "[map[]]" {
-		fmt.Println(itemCampos)
 		return helpers.ErrEmiter(errItemCampos, fmt.Sprintf("%v", itemCampos))
 	}
 
 	var campos map[string]interface{}
 	errCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=Activo:true&sortby=Id&order=asc&limit=0"), &campos)
 	if errCampos != nil || fmt.Sprintf("%v", campos) == "[map[]]" {
-		fmt.Println(campos)
 		return helpers.ErrEmiter(errCampos, fmt.Sprintf("%v", campos))
 	}
 

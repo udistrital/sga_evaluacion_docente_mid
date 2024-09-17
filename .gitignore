@@ -1,13 +1,27 @@
-lastupdate.tmp
-.vscode/
-planeacion_mid
-planeacion_mid.exe
+# Binarios, Compilados y Temporales
+*.tmp
+*.log
+*.zip
+*.exe
+*~
+sga_evaluacion_docente_mid
+main
+
 go.mod
 go.sum
-main
-.scannerwork/
+
+# Variables de entorno - ignorar todas
 *.env
+# Excepto una plantilla
+!.template.env
+# y el env_file que importaría docker-compose
+!.develop.env
+
+# IDEs y otros
+.vscode/
+.scannerwork/
+
+# Swagger
 swagger/**
-!swagger/*.json
-!swagger/*.yml
-swagger.zip
+!swagger/swagger.json
+!swagger/swagger.yml
