@@ -94,15 +94,10 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 
 	//Aqui queadaría organizada por secciones
 	response := map[string]interface{}{
-		"Success": true,
-		"Status":  200,
-		"Message": "Consulta exitosa",
-		"Data": map[string]interface{}{
-			"docente":          id_tercero, //consultar cuando exista la data del tercero evaluado
-			"espacioAcademico": id_espacio, //consultar cuando exista la data del espacio academico
-			"seccion":          ordenSecciones,
-			"tipoEvaluacion":   id_tipo_formulario, //consultar a parametro  y se le pasa el id del tipo de evaluacion
-		},
+		"docente":          id_tercero, //consultar cuando exista la data del tercero evaluado
+		"espacioAcademico": id_espacio, //consultar cuando exista la data del espacio academico
+		"seccion":          ordenSecciones,
+		"tipoEvaluacion":   id_tipo_formulario, //consultar a parametro  y se le pasa el id del tipo de evaluacion
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
