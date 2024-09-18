@@ -150,7 +150,6 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	if errNuevoForm != nil {
 		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
 	} else {
-		fmt.Println(response["Data"].(map[string]interface{}))
 		return response["Data"].(map[string]interface{}), nil
 	}
 

@@ -1,19 +1,17 @@
 // @APIVersion 1.0.0
-// @Title beego Test API
-// @Description beego has a very cool tools to autogenerate documents for your API
-// @Contact astaxie@gmail.com
-// @TermsOfServiceUrl http://beego.me/
-// @License Apache 2.0
-// @LicenseUrl http://www.apache.org/licenses/LICENSE-2.0.html
+// @Title SGA MID - Evaluación Docente
+// @Description Microservicio MID del SGA MID que complementa evaluación docente
 package routers
 
 import (
 	"github.com/udistrital/sga_evaluacion_docente_mid/controllers"
+	"github.com/udistrital/utils_oas/errorhandler"
 
 	"github.com/astaxie/beego"
 )
 
 func init() {
+	beego.ErrorController(&errorhandler.ErrorHandlerController{})
 	ns := beego.NewNamespace("/v1",
 		beego.NSNamespace("/formulario_por_tipo",
 			beego.NSInclude(
