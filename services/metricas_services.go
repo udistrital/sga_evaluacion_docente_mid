@@ -49,6 +49,16 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 
 	var response map[string]interface{}
 	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"]), &response)
+
+	type ItemPlantillaRespuesta struct {
+		ItemId             string                   `json:"item_id"`
+		PlantillaId        string                   `json:"plantilla_id"`
+		CantidadRespuestas int                      `json:"cantidad_respuestas"`
+		RespuestasDetalle  []map[string]interface{} `json:"respuestas_detalle"` //Metadata, aqui puede asiganrse el valor, o el UID de los archivos según se requeira
+	}
+
+	var itemsPlantillasRespuestas []ItemPlantillaRespuesta
+
 	if errFormulario == nil {
 		if dataSource["campos"].(map[string]interface{})["componente"] != nil {
 
@@ -81,7 +91,6 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 						}
 					}
 
-					fmt.Println("ItemIds:", itemIds)
 					var plantillaResponse map[string]interface{}
 					errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
 					if errPlantilla == nil {
@@ -94,28 +103,57 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 									if itemId == id {
 										plantillaId := fmt.Sprintf("%v", plantilla.(map[string]interface{})["Id"])
 										plantillaIds = append(plantillaIds, plantillaId)
+
+										var formrespuestaResponse map[string]interface{}
+										errFormrespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
+										if errFormrespuesta == nil {
+
+											var respuestasDetalle []map[string]interface{}
+											if formrespuestaResponse["Data"] != nil {
+												for _, respuesta := range formrespuestaResponse["Data"].([]interface{}) {
+													respuestaMap := respuesta.(map[string]interface{})
+													plantillaRespId := fmt.Sprintf("%v", respuestaMap["PlantillaId"].(map[string]interface{})["Id"])
+
+													if plantillaRespId == plantillaId {
+														respuestaId := fmt.Sprintf("%v", respuestaMap["RespuestaId"].(map[string]interface{})["Id"])
+														respuestasIds = append(respuestasIds, respuestaId)
+
+														var respuestaDetalleResponse map[string]interface{}
+														errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s", respuestaId), &respuestaDetalleResponse)
+														if errRespuesta == nil {
+															if respuestaDetalleResponse["Data"] != nil {
+																respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})
+																metadataStr := respuestaDetalle["Metadata"]
+																if metadataStr != nil {
+																	var metadataMap map[string]interface{}
+																	err := json.Unmarshal([]byte(metadataStr.(string)), &metadataMap)
+																	if err == nil {
+																		valor, ok := metadataMap["valor"]
+																		if !ok {
+																			valor = nil
+																		}
+																		respuestasDetalle = append(respuestasDetalle, map[string]interface{}{
+																			"Metadata": metadataMap,
+																			"Valor":    valor,
+																		})
+																	}
+																}
+															}
+														}
+
+													}
+												}
+											}
+											obj := ItemPlantillaRespuesta{
+												ItemId:             itemId,
+												PlantillaId:        plantillaId,
+												CantidadRespuestas: len(respuestasIds),
+												RespuestasDetalle:  respuestasDetalle,
+											}
+											itemsPlantillasRespuestas = append(itemsPlantillasRespuestas, obj)
+										}
 										break
 									}
-								}
-							}
-							fmt.Println("PlantillaIds:", plantillaIds)
-
-							var formrespuestaResponse map[string]interface{}
-							errFormrespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
-							if errFormrespuesta == nil {
-								if formrespuestaResponse["Data"] != nil {
-									for _, respuesta := range formrespuestaResponse["Data"].([]interface{}) {
-										respuestaMap := respuesta.(map[string]interface{})
-										plantillaRespId := fmt.Sprintf("%v", respuestaMap["PlantillaId"].(map[string]interface{})["Id"])
-
-										for _, plantillaId := range plantillaIds {
-											if plantillaRespId == plantillaId {
-												respuestaId := fmt.Sprintf("%v", respuestaMap["RespuestaId"].(map[string]interface{})["Id"])
-												respuestasIds = append(respuestasIds, respuestaId)
-											}
-										}
-									}
-									fmt.Println("Respuestas coincidentes:", respuestasIds)
 								}
 							}
 						}
@@ -123,40 +161,10 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 				}
 			}
 		}
-
 		if dataSource["campos"].(map[string]interface{})["vinculacion"] != nil {
-
-			var resVinculacion map[string]interface{}
-			errVinculacion := request.GetJson("http://"+beego.AppConfig.String("PlanDocenteService")+fmt.Sprintf("plan_docente?query=tipo_vinculacion_id:293&sortby=Id&order=asc&limit=0"), &resVinculacion)
-			if errVinculacion == nil {
-				for _, item := range resVinculacion["Data"].([]interface{}) {
-					docenteId := fmt.Sprintf("%v", item.(map[string]interface{})["docente_id"])
-					docenteIds = append(docenteIds, docenteId)
-				}
-			}
-
-			var formVinc []interface{}
-			var formIds []string
-			for _, formulario := range response["Data"].([]interface{}) {
-				terceroId := fmt.Sprintf("%v", formulario.(map[string]interface{})["EvaluadoId"])
-				for _, docenteId := range docenteIds {
-					if terceroId == docenteId {
-						formVinc = append(formVinc, formulario)
-						formId := fmt.Sprintf("%v", formulario.(map[string]interface{})["Id"])
-						formIds = append(formIds, formId)
-						break
-					}
-				}
-			}
-
-			APIResponseDTO = requestresponse.APIResponseDTO(true, 200, formVinc, "Reporte global procesado exitosamente")
-			return APIResponseDTO
-		}
-		if docenteIds != nil {
-			fmt.Println("Docentes:", docenteIds)
 		}
 
-		APIResponseDTO = requestresponse.APIResponseDTO(true, 200, "formVinc", "Reporte global procesado exitosamente")
+		APIResponseDTO = requestresponse.APIResponseDTO(true, 200, itemsPlantillasRespuestas, "Reporte global procesado exitosamente")
 		return APIResponseDTO
 	}
 
