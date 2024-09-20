@@ -9,6 +9,7 @@ import (
 	"github.com/udistrital/utils_oas/requestresponse"
 )
 
+//id tipo formulario hace referencia a proceso_id de la tabla plantilla
 func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
 
 	var plantilla map[string]interface{}
@@ -89,10 +90,13 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		if nombre == "" {
 			nombre = fmt.Sprintf("seccion_%d", orden)
 		}
-		ordenSecciones[nombre] = seccionMap
+		if _, exists := ordenSecciones[nombre]; !exists {
+			ordenSecciones[nombre] = []interface{}{}
+		}
+		ordenSecciones[nombre] = append(ordenSecciones[nombre].([]interface{}), seccionMap)
 	}
 
-	//Aqui queadaría organizada por secciones
+	//Aqui queadaría organizada por tipos de seccion y dentro de cada lista las secciones correspondientes
 	response := map[string]interface{}{
 		"docente":          id_tercero, //consultar cuando exista la data del tercero evaluado
 		"espacioAcademico": id_espacio, //consultar cuando exista la data del espacio academico
