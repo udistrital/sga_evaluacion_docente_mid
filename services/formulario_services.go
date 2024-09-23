@@ -9,7 +9,7 @@ import (
 	"github.com/udistrital/utils_oas/requestresponse"
 )
 
-//id tipo formulario hace referencia a proceso_id de la tabla plantilla
+// id tipo formulario hace referencia a proceso_id de la tabla plantilla
 func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
 
 	var plantilla map[string]interface{}
@@ -60,40 +60,41 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 			secciones[seccionId] = map[string]interface{}{
 				"nombre": seccion["Nombre"].(string),
 				"orden":  int(seccion["Orden"].(float64)),
-				"items":  []map[string]interface{}{},
+				"items":  map[string]interface{}{},
 			}
 		}
 
 		itemId := int(itemMap["ItemId"].(map[string]interface{})["Id"].(float64))
+		orden := fmt.Sprintf("%v", itemMap["ItemId"].(map[string]interface{})["Orden"])
 		itemInfo := map[string]interface{}{
 			"id":     itemId,
 			"nombre": itemMap["ItemId"].(map[string]interface{})["Nombre"].(string),
-			"orden":  int(itemMap["ItemId"].(map[string]interface{})["Orden"].(float64)),
 			"campos": itemCamposMap[itemId],
 		}
-		secciones[seccionId]["items"] = append(secciones[seccionId]["items"].([]map[string]interface{}), itemInfo)
+		secciones[seccionId]["items"].(map[string]interface{})[orden] = itemInfo
 	}
 
 	ordenSecciones := map[string]interface{}{}
-	ordenNombres := map[int]string{
+	/* ordenNombres := map[int]string{
 		0: "descripcion",
 		1: "cuantitativa",
 		2: "cualitativa",
 		3: "carga de archivos",
 		4: "descarga de archivos",
-	}
+	} */
 
 	for _, seccion := range secciones {
 		seccionMap := seccion
-		orden := seccionMap["orden"].(int)
-		nombre := ordenNombres[orden]
+		orden := fmt.Sprintf("%d", seccionMap["orden"].(int))
+		delete(seccionMap, "orden")
+		/* nombre := ordenNombres[orden]
 		if nombre == "" {
 			nombre = fmt.Sprintf("seccion_%d", orden)
 		}
 		if _, exists := ordenSecciones[nombre]; !exists {
 			ordenSecciones[nombre] = []interface{}{}
-		}
-		ordenSecciones[nombre] = append(ordenSecciones[nombre].([]interface{}), seccionMap)
+		}*/
+		ordenSecciones[orden] = seccionMap
 	}
 
 	//Aqui queadaría organizada por tipos de seccion y dentro de cada lista las secciones correspondientes
