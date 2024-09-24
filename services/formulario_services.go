@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
@@ -9,7 +10,7 @@ import (
 	"github.com/udistrital/utils_oas/requestresponse"
 )
 
-//id tipo formulario hace referencia a proceso_id de la tabla plantilla
+// id tipo formulario hace referencia a proceso_id de la tabla plantilla
 func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
 
 	var plantilla map[string]interface{}
@@ -30,7 +31,7 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		return helpers.ErrEmiter(errCampos, fmt.Sprintf("%v", campos))
 	}
 
-	secciones := map[int]map[string]interface{}{}
+	secciones := []map[string]interface{}{}
 	data := plantilla["Data"].([]interface{})
 	itemCamposMap := make(map[int][]map[string]interface{})
 	itemCamposData := itemCampos["Data"].([]interface{})
@@ -40,13 +41,12 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		itemId := int(itemCampoMap["ItemId"].(map[string]interface{})["Id"].(float64))
 		campo := itemCampoMap["CampoId"].(map[string]interface{})
 		campoId := int(campo["Id"].(float64))
-
 		campoInfo := map[string]interface{}{
 			"nombre":     campo["Nombre"].(string),
 			"tipo_campo": int(campo["TipoCampoId"].(float64)),
 			"valor":      campo["Valor"],
 			"porcentaje": itemCampoMap["Porcentaje"],
-			"escala":     obtenerCamposHijos(campoId, camposData), //funcion para encontrar los campos hijos si los hay si no regresa lo mismo
+			"escala":     obtenerCamposHijos(campoId, camposData),
 		}
 		itemCamposMap[itemId] = append(itemCamposMap[itemId], campoInfo)
 	}
@@ -56,52 +56,59 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		seccion := itemMap["SeccionId"].(map[string]interface{})
 		seccionId := int(seccion["Id"].(float64))
 
-		if _, exists := secciones[seccionId]; !exists {
-			secciones[seccionId] = map[string]interface{}{
+		var seccionEncontrada map[string]interface{}
+		for _, sec := range secciones {
+			if sec["id"] == seccionId {
+				seccionEncontrada = sec
+				break
+			}
+		}
+
+		if seccionEncontrada == nil {
+			seccionNueva := map[string]interface{}{
+				"id":     seccionId,
 				"nombre": seccion["Nombre"].(string),
 				"orden":  int(seccion["Orden"].(float64)),
 				"items":  []map[string]interface{}{},
 			}
+			secciones = append(secciones, seccionNueva)
+			seccionEncontrada = seccionNueva
 		}
 
 		itemId := int(itemMap["ItemId"].(map[string]interface{})["Id"].(float64))
+		itemOrden := int(itemMap["ItemId"].(map[string]interface{})["Orden"].(float64))
 		itemInfo := map[string]interface{}{
 			"id":     itemId,
 			"nombre": itemMap["ItemId"].(map[string]interface{})["Nombre"].(string),
-			"orden":  int(itemMap["ItemId"].(map[string]interface{})["Orden"].(float64)),
+			"orden":  itemOrden,
 			"campos": itemCamposMap[itemId],
 		}
-		secciones[seccionId]["items"] = append(secciones[seccionId]["items"].([]map[string]interface{}), itemInfo)
-	}
-
-	ordenSecciones := map[string]interface{}{}
-	ordenNombres := map[int]string{
-		0: "descripcion",
-		1: "cuantitativa",
-		2: "cualitativa",
-		3: "carga de archivos",
-		4: "descarga de archivos",
+		seccionEncontrada["items"] = append(seccionEncontrada["items"].([]map[string]interface{}), itemInfo)
 	}
 
 	for _, seccion := range secciones {
-		seccionMap := seccion
-		orden := seccionMap["orden"].(int)
-		nombre := ordenNombres[orden]
-		if nombre == "" {
-			nombre = fmt.Sprintf("seccion_%d", orden)
-		}
-		if _, exists := ordenSecciones[nombre]; !exists {
-			ordenSecciones[nombre] = []interface{}{}
-		}
-		ordenSecciones[nombre] = append(ordenSecciones[nombre].([]interface{}), seccionMap)
+		items := seccion["items"].([]map[string]interface{})
+		sort.Slice(items, func(i, j int) bool {
+			if items[i]["orden"].(int) == items[j]["orden"].(int) {
+				return items[i]["id"].(int) < items[j]["id"].(int)
+			}
+			return items[i]["orden"].(int) < items[j]["orden"].(int)
+		})
 	}
 
-	//Aqui queadaría organizada por tipos de seccion y dentro de cada lista las secciones correspondientes
+	sort.Slice(secciones, func(i, j int) bool {
+		if secciones[i]["orden"].(int) == secciones[j]["orden"].(int) {
+			return secciones[i]["id"].(int) < secciones[j]["id"].(int)
+		}
+		return secciones[i]["orden"].(int) < secciones[j]["orden"].(int)
+	})
+
+	// Aquí quedaría organizada como un arreglo de secciones con items ordenados
 	response := map[string]interface{}{
-		"docente":          id_tercero, //consultar cuando exista la data del tercero evaluado
-		"espacioAcademico": id_espacio, //consultar cuando exista la data del espacio academico
-		"seccion":          ordenSecciones,
-		"tipoEvaluacion":   id_tipo_formulario, //consultar a parametro  y se le pasa el id del tipo de evaluacion
+		"docente":          id_tercero, // consultar cuando exista la data del tercero evaluado
+		"espacioAcademico": id_espacio, // consultar cuando exista la data del espacio académico
+		"seccion":          secciones,
+		"tipoEvaluacion":   id_tipo_formulario, // consultar a parámetro y se le pasa el id del tipo de evaluación
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
