@@ -41,12 +41,19 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		itemId := int(itemCampoMap["ItemId"].(map[string]interface{})["Id"].(float64))
 		campo := itemCampoMap["CampoId"].(map[string]interface{})
 		campoId := int(campo["Id"].(float64))
+		tipoCampo := int(campo["TipoCampoId"].(float64))
 		campoInfo := map[string]interface{}{
 			"nombre":     campo["Nombre"].(string),
-			"tipo_campo": int(campo["TipoCampoId"].(float64)),
+			"tipo_campo": tipoCampo,
 			"valor":      campo["Valor"],
 			"porcentaje": itemCampoMap["Porcentaje"],
 			"escala":     obtenerCamposHijos(campoId, camposData),
+		}
+		if tipoCampo == 6 {
+			descargaArchivos := obtenerDescargaArchivos(id_tercero, id_espacio)
+			for key, value := range descargaArchivos {
+				campoInfo[key] = value
+			}
 		}
 		itemCamposMap[itemId] = append(itemCamposMap[itemId], campoInfo)
 	}
@@ -148,4 +155,17 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 	}
 
 	return hijos
+}
+func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]interface{} {
+
+	documentos := []string{
+		fmt.Sprintf("documento_%s_1", id_tercero),
+		fmt.Sprintf("documento_%s_2", id_espacio),
+	}
+
+	return map[string]interface{}{
+		"UIDs":       documentos,
+		"id_tercero": id_tercero,
+		"id_espacio": id_espacio,
+	}
 }
