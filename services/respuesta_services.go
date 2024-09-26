@@ -191,7 +191,7 @@ func InactivarRespuesta(id int) error {
 }
 
 func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, error) {
-	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/"
+	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/?limit=0"
 	var response map[string]interface{}
 	err := request.SendJson(url, "GET", &response, nil)
 	if err != nil {
