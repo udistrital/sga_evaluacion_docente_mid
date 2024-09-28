@@ -45,15 +45,18 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		tipoCampo := int(campo["TipoCampoId"].(float64))
 		campoInfo := map[string]interface{}{
 			"nombre":     campo["Nombre"].(string),
+			"campo_id":   campoId,
 			"tipo_campo": tipoCampo,
 			"valor":      campo["Valor"],
 			"porcentaje": itemCampoMap["Porcentaje"],
 			"escala":     obtenerCamposHijos(campoId, camposData),
 		}
-		if tipoCampo == 6 {
+		if tipoCampo == 6 { // 6 es carga de archivos
 			descargaArchivos := obtenerDescargaArchivos(id_tercero, id_espacio)
 			for key, value := range descargaArchivos {
 				campoInfo[key] = value
+				campoInfo["nombre"] = "descarga_archivos"
+				campoInfo["tipo_campo"] = 5 // 5 es descarga de archivos
 			}
 		}
 		itemCamposMap[itemId] = append(itemCamposMap[itemId], campoInfo)
@@ -111,12 +114,11 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		return secciones[i]["orden"].(int) < secciones[j]["orden"].(int)
 	})
 
-	// Aquí quedaría organizada como un arreglo de secciones con items ordenados
 	response := map[string]interface{}{
-		"docente":          id_tercero, // consultar cuando exista la data del tercero evaluado
-		"espacioAcademico": id_espacio, // consultar cuando exista la data del espacio académico
+		"docente":          id_tercero,
+		"espacioAcademico": id_espacio,
 		"seccion":          secciones,
-		"tipoEvaluacion":   id_tipo_formulario, // consultar a parámetro y se le pasa el id del tipo de evaluación
+		"tipoEvaluacion":   id_tipo_formulario,
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
@@ -149,6 +151,7 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 					"nombre":     campoMap["Nombre"].(string),
 					"tipo_campo": int(campoMap["TipoCampoId"].(float64)),
 					"valor":      campoMap["Valor"],
+					"campo_id":   campoMap["Id"],
 				}
 				hijos = append(hijos, hijoInfo)
 			}
@@ -181,7 +184,7 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]in
 				campoIds = append(campoIds, campoId)
 
 				var itemCampoResponse map[string]interface{}
-				errItemCampo := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true", campoId), &itemCampoResponse)
+				errItemCampo := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0&order=asc", campoId), &itemCampoResponse)
 				if errItemCampo == nil && itemCampoResponse["Data"] != nil {
 					for _, itemCampo := range itemCampoResponse["Data"].([]interface{}) {
 						if itemCampoMap, ok := itemCampo.(map[string]interface{}); ok {
@@ -196,7 +199,6 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]in
 		}
 
 		itemIds = itemIdsCampos
-		fmt.Println("itemIds", itemIds)
 
 		if response["Data"] != nil {
 			for _, formulario := range response["Data"].([]interface{}) {
@@ -223,34 +225,42 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]in
 							if errFormrespuesta == nil && formrespuestaResponse["Data"] != nil {
 
 								for _, respuesta := range formrespuestaResponse["Data"].([]interface{}) {
-									fmt.Println("------------------")
 									respuestaMap := respuesta.(map[string]interface{})
-									if plantillaRespId, ok := respuestaMap["PlantillaId"].(map[string]interface{})["Id"]; ok {
-										fmt.Println("***************")
-										fmt.Println("plantillaRespId", plantillaRespId)
-										fmt.Println("plantillaId", plantillaId)
-										fmt.Println("formularioIds", formularioIds)
-										fmt.Println("contains", respuestaMap["FormularioId"].(map[string]interface{})["Id"])
-										if contains(formularioIds, fmt.Sprintf("%v", respuestaMap["FormularioId"].(map[string]interface{})["Id"])) {
-											respuestaId := fmt.Sprintf("%v", respuestaMap["RespuestaId"].(map[string]interface{})["Id"])
-											respuestasIds = append(respuestasIds, respuestaId)
-											fmt.Println("++++++++++++++++++++++")
-											var respuestaDetalleResponse map[string]interface{}
-											errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s", respuestaId), &respuestaDetalleResponse)
-											fmt.Println("respuestaDetalleResponse", respuestaDetalleResponse)
-											if errRespuesta == nil && respuestaDetalleResponse["Data"] != nil {
-												respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})
-												if metadataStr, ok := respuestaDetalle["Metadata"].(string); ok && metadataStr != "" {
-													var metadataMap map[string]interface{}
-													err := json.Unmarshal([]byte(metadataStr), &metadataMap)
-													if err == nil {
-														metadataStr, _ := json.Marshal(metadataMap)
-														documentos = append(documentos, string(metadataStr))
+									if plantillaRespMap, ok := respuestaMap["PlantillaId"].(map[string]interface{}); ok {
+										if _, ok := plantillaRespMap["Id"]; ok {
+											formularioIdMap, ok := respuestaMap["FormularioId"].(map[string]interface{})
+											if ok && contains(formularioIds, fmt.Sprintf("%v", formularioIdMap["Id"])) {
+												respuestaIdMap, ok := respuestaMap["RespuestaId"].(map[string]interface{})
+												if ok {
+													respuestaId := fmt.Sprintf("%v", respuestaIdMap["Id"])
+													respuestasIds = append(respuestasIds, respuestaId)
+
+													var respuestaDetalleResponse map[string]interface{}
+													errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&order=asc&limit=0", respuestaId), &respuestaDetalleResponse)
+
+													if errRespuesta == nil && respuestaDetalleResponse["Data"] != nil {
+														respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})
+
+														if metadataStr, ok := respuestaDetalle["Metadata"].(string); ok && metadataStr != "" {
+															var metadataMap map[string]interface{}
+															err := json.Unmarshal([]byte(metadataStr), &metadataMap)
+															if err == nil {
+																archivos, ok := metadataMap["archivos"].([]interface{})
+																if ok {
+																	for _, archivo := range archivos {
+																		if archivoStr, ok := archivo.(string); ok {
+																			documentos = append(documentos, archivoStr)
+																		}
+																	}
+																}
+															}
+														}
 													}
 												}
 											}
 										}
 									}
+
 								}
 							}
 						}
@@ -261,8 +271,6 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]in
 	}
 
 	return map[string]interface{}{
-		"UIDs":       documentos,
-		"id_tercero": id_tercero,
-		"id_espacio": id_espacio,
+		"UIDs": documentos,
 	}
 }
