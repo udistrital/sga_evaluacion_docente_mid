@@ -5,6 +5,26 @@ info:
   version: 1.0.0
 basePath: /v1
 paths:
+  /carga_academica/:
+    post:
+      tags:
+      - carga_academica
+      description: create CargaAcademica
+      operationId: CargaAcademicaController.PostCargaAcademica
+      parameters:
+      - in: body
+        name: body
+        description: body for CargaAcademica content
+        required: true
+        schema:
+          $ref: '#/definitions/models.CargaAcademica'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.CargaAcademica'
+        "403":
+          description: body is empty
   /formulario_por_tipo/:
     get:
       tags:
@@ -114,6 +134,9 @@ paths:
         "403":
           description: body is empty
 definitions:
+  models.CargaAcademica:
+    title: CargaAcademica
+    type: object
   models.MetricasAutoevaluacion:
     title: MetricasAutoevaluacion
     type: object
@@ -136,3 +159,6 @@ tags:
 - name: metricas
   description: |
     MetricasController operations for Metricas
+- name: carga_academica
+  description: |
+    CargaAcademicaController operations for CargaAcademica
