@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 
@@ -41,12 +42,22 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		itemId := int(itemCampoMap["ItemId"].(map[string]interface{})["Id"].(float64))
 		campo := itemCampoMap["CampoId"].(map[string]interface{})
 		campoId := int(campo["Id"].(float64))
+		tipoCampo := int(campo["TipoCampoId"].(float64))
 		campoInfo := map[string]interface{}{
 			"nombre":     campo["Nombre"].(string),
-			"tipo_campo": int(campo["TipoCampoId"].(float64)),
+			"campo_id":   campoId,
+			"tipo_campo": tipoCampo,
 			"valor":      campo["Valor"],
 			"porcentaje": itemCampoMap["Porcentaje"],
 			"escala":     obtenerCamposHijos(campoId, camposData),
+		}
+		if tipoCampo == 6 { // 6 es carga de archivos
+			descargaArchivos := obtenerDescargaArchivos(id_tercero, id_espacio)
+			for key, value := range descargaArchivos {
+				campoInfo[key] = value
+				campoInfo["nombre"] = "descarga_archivos"
+				campoInfo["tipo_campo"] = 5 // 5 es descarga de archivos
+			}
 		}
 		itemCamposMap[itemId] = append(itemCamposMap[itemId], campoInfo)
 	}
@@ -103,12 +114,11 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		return secciones[i]["orden"].(int) < secciones[j]["orden"].(int)
 	})
 
-	// Aquí quedaría organizada como un arreglo de secciones con items ordenados
 	response := map[string]interface{}{
-		"docente":          id_tercero, // consultar cuando exista la data del tercero evaluado
-		"espacioAcademico": id_espacio, // consultar cuando exista la data del espacio académico
+		"docente":          id_tercero,
+		"espacioAcademico": id_espacio,
 		"seccion":          secciones,
-		"tipoEvaluacion":   id_tipo_formulario, // consultar a parámetro y se le pasa el id del tipo de evaluación
+		"tipoEvaluacion":   id_tipo_formulario,
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
@@ -141,6 +151,7 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 					"nombre":     campoMap["Nombre"].(string),
 					"tipo_campo": int(campoMap["TipoCampoId"].(float64)),
 					"valor":      campoMap["Valor"],
+					"campo_id":   campoMap["Id"],
 				}
 				hijos = append(hijos, hijoInfo)
 			}
@@ -148,4 +159,118 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 	}
 
 	return hijos
+}
+func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]interface{} {
+
+	var campoIds []string
+	var itemIds []string
+	var itemIdsCampos []string
+	var plantillaIds []string
+	var respuestasIds []string
+	var formularioIds []string
+	var documentos []string
+
+	var response map[string]interface{}
+	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_tercero), &response)
+
+	if errFormulario == nil {
+
+		var camposResponse map[string]interface{}
+		errCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:6&sortby=Id&order=asc&limit=0&Activo=true"), &camposResponse)
+		if errCampos == nil {
+
+			for _, campo := range camposResponse["Data"].([]interface{}) {
+				campoId := fmt.Sprintf("%v", campo.(map[string]interface{})["Id"])
+				campoIds = append(campoIds, campoId)
+
+				var itemCampoResponse map[string]interface{}
+				errItemCampo := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0&order=asc", campoId), &itemCampoResponse)
+				if errItemCampo == nil && itemCampoResponse["Data"] != nil {
+					for _, itemCampo := range itemCampoResponse["Data"].([]interface{}) {
+						if itemCampoMap, ok := itemCampo.(map[string]interface{}); ok {
+							if itemObj, ok := itemCampoMap["ItemId"].(map[string]interface{}); ok && itemObj["Id"] != nil {
+								itemId := fmt.Sprintf("%v", itemObj["Id"])
+								itemIdsCampos = append(itemIdsCampos, itemId)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		itemIds = itemIdsCampos
+
+		if response["Data"] != nil {
+			for _, formulario := range response["Data"].([]interface{}) {
+				formularioMap := formulario.(map[string]interface{})
+				formularioId := fmt.Sprintf("%v", formularioMap["Id"])
+				formularioIds = append(formularioIds, formularioId)
+			}
+		}
+
+		var plantillaResponse map[string]interface{}
+		errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
+		if errPlantilla == nil && plantillaResponse["Data"] != nil {
+			for _, plantilla := range plantillaResponse["Data"].([]interface{}) {
+
+				if itemPlantilla, ok := plantilla.(map[string]interface{})["ItemId"].(map[string]interface{}); ok {
+					itemId := fmt.Sprintf("%v", itemPlantilla["Id"])
+					for _, id := range itemIds {
+						if itemId == id {
+							plantillaId := fmt.Sprintf("%v", plantilla.(map[string]interface{})["Id"])
+							plantillaIds = append(plantillaIds, plantillaId)
+
+							var formrespuestaResponse map[string]interface{}
+							errFormrespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
+							if errFormrespuesta == nil && formrespuestaResponse["Data"] != nil {
+
+								for _, respuesta := range formrespuestaResponse["Data"].([]interface{}) {
+									respuestaMap := respuesta.(map[string]interface{})
+									if plantillaRespMap, ok := respuestaMap["PlantillaId"].(map[string]interface{}); ok {
+										if _, ok := plantillaRespMap["Id"]; ok {
+											formularioIdMap, ok := respuestaMap["FormularioId"].(map[string]interface{})
+											if ok && contains(formularioIds, fmt.Sprintf("%v", formularioIdMap["Id"])) {
+												respuestaIdMap, ok := respuestaMap["RespuestaId"].(map[string]interface{})
+												if ok {
+													respuestaId := fmt.Sprintf("%v", respuestaIdMap["Id"])
+													respuestasIds = append(respuestasIds, respuestaId)
+
+													var respuestaDetalleResponse map[string]interface{}
+													errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&order=asc&limit=0", respuestaId), &respuestaDetalleResponse)
+
+													if errRespuesta == nil && respuestaDetalleResponse["Data"] != nil {
+														respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})
+
+														if metadataStr, ok := respuestaDetalle["Metadata"].(string); ok && metadataStr != "" {
+															var metadataMap map[string]interface{}
+															err := json.Unmarshal([]byte(metadataStr), &metadataMap)
+															if err == nil {
+																archivos, ok := metadataMap["archivos"].([]interface{})
+																if ok {
+																	for _, archivo := range archivos {
+																		if archivoStr, ok := archivo.(string); ok {
+																			documentos = append(documentos, archivoStr)
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return map[string]interface{}{
+		"UIDs": documentos,
+	}
 }

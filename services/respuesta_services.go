@@ -33,8 +33,8 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 				if itemID, ok := item["item_id"]; ok {
 					metadata["item_id"] = itemID
 
-					if valor, ok := item["campo_id"]; ok { //id del campo hijo
-						metadata["campo_id"] = valor
+					if campo, ok := item["campo_id"]; ok { //id del campo hijo
+						metadata["campo_id"] = campo
 					}
 					if valor, ok := item["valor"]; ok {
 						metadata["valor"] = valor
