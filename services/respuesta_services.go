@@ -33,6 +33,9 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 				if itemID, ok := item["item_id"]; ok {
 					metadata["item_id"] = itemID
 
+					if campo, ok := item["campo_id"]; ok { //id del campo hijo
+						metadata["campo_id"] = campo
+					}
 					if valor, ok := item["valor"]; ok {
 						metadata["valor"] = valor
 					}
@@ -188,7 +191,7 @@ func InactivarRespuesta(id int) error {
 }
 
 func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, error) {
-	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/"
+	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/?limit=0"
 	var response map[string]interface{}
 	err := request.SendJson(url, "GET", &response, nil)
 	if err != nil {
