@@ -119,6 +119,7 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		"espacioAcademico": id_espacio,
 		"seccion":          secciones,
 		"tipoEvaluacion":   id_tipo_formulario,
+		"evaluacion":       id_tipo_formulario,
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
