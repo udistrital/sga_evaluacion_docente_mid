@@ -51,7 +51,7 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 			"porcentaje": itemCampoMap["Porcentaje"],
 			"escala":     obtenerCamposHijos(campoId, camposData),
 		}
-		if tipoCampo == 6686 { // 6 es carga de archivos
+		if tipoCampo == 6686 && id_tipo_formulario == "5" { // 6 es carga de archivos
 			descargaArchivos := obtenerDescargaArchivos(id_tercero, id_espacio)
 			for key, value := range descargaArchivos {
 				campoInfo[key] = value
