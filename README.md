@@ -89,4 +89,3 @@ sga_evaluacion_docente_mid is distributed in the hope that it will be useful, bu
 
 You should have received a copy of the GNU General Public License along with sga_mid. If not, see https://www.gnu.org/licenses/.
 
-
