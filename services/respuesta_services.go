@@ -74,25 +74,32 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 					formularioID := formulario["Id"].(float64)
 					plantillaID := plantilla["Id"].(float64)
 					respuestaID := nuevaRes["Data"].(map[string]interface{})["Id"].(float64)
-
-					relacion := map[string]interface{}{
-						"Activo":            true,
-						"FechaCreacion":     time.Now(),
-						"FechaModificacion": time.Now(),
-						"FormularioId":      map[string]interface{}{"Id": int(formularioID)},
-						"PlantillaId":       map[string]interface{}{"Id": int(plantillaID)},
-						"RespuestaId":       map[string]interface{}{"Id": int(respuestaID)},
-					}
-
-					var response map[string]interface{}
-					errRelacion := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formrespuesta/", "POST", &response, relacion)
-					if errRelacion != nil {
-						InactivarFormulario(formulario["Id"].(int))
-						APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al crear la relación: %v", errRelacion))
+					existe := VerificarRespuesta(int(formularioID), int(plantillaID))
+					if existe.Status == 200 {
+						APIResponseDTO = requestresponse.APIResponseDTO(false, 400, formulario, fmt.Sprintf("Ya se han registrado respuestas para este formulario"))
 						return APIResponseDTO
-					}
+					} else {
+						fmt.Println("Respuesta no existe")
 
-					respuestas = append(respuestas, nuevaRes)
+						relacion := map[string]interface{}{
+							"Activo":            true,
+							"FechaCreacion":     time.Now(),
+							"FechaModificacion": time.Now(),
+							"FormularioId":      map[string]interface{}{"Id": int(formularioID)},
+							"PlantillaId":       map[string]interface{}{"Id": int(plantillaID)},
+							"RespuestaId":       map[string]interface{}{"Id": int(respuestaID)},
+						}
+
+						var response map[string]interface{}
+						errRelacion := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formrespuesta/", "POST", &response, relacion)
+						if errRelacion != nil {
+							InactivarFormulario(formulario["Id"].(int))
+							APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al crear la relación: %v", errRelacion))
+							return APIResponseDTO
+						}
+
+						respuestas = append(respuestas, nuevaRes)
+					}
 				}
 			}
 		}
@@ -211,4 +218,26 @@ func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, erro
 	}
 
 	return nil, fmt.Errorf("Plantilla no encontrada para el item_id: %v", itemID)
+}
+
+func VerificarRespuesta(formularioID int, plantillaID int) (APIResponseDTO requestresponse.APIResponse) {
+	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "formrespuesta?query=Activo:true,FormularioId.Id:" + fmt.Sprint(formularioID) + ",PlantillaId.Id:" + fmt.Sprint(plantillaID)
+	var response map[string]interface{}
+	err := request.GetJson(url, &response)
+	if err != nil {
+		APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al verificar la respuesta: %v", err))
+		return APIResponseDTO
+	}
+
+	if data, ok := response["Data"].([]interface{}); ok {
+		if len(data) == 0 || (len(data) == 1 && len(data[0].(map[string]interface{})) == 0) {
+			APIResponseDTO = requestresponse.APIResponseDTO(false, 404, nil, "No se encontraron respuestas previas.")
+			return APIResponseDTO
+		}
+		APIResponseDTO = requestresponse.APIResponseDTO(true, 200, nil, "Respuestas previas encontradas.")
+		return APIResponseDTO
+	}
+
+	APIResponseDTO = requestresponse.APIResponseDTO(false, 404, nil, "No se encontraron respuestas previas.")
+	return APIResponseDTO
 }
