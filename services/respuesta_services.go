@@ -153,7 +153,26 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	if errNuevoForm != nil {
 		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
 	} else {
-		return response["Data"].(map[string]interface{}), nil
+		// TODO: ajuste temporal
+		if response["Success"] == true {
+			return response["Data"].(map[string]interface{}), nil
+		} else {
+			var resp map[string]interface{}
+			fmt.Println("goes by here")
+			errCheck := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
+			if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
+				nuevoFormulario["TerceroId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
+				errNuevoForm = request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
+				if errNuevoForm != nil {
+					return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
+				} else {
+					return response["Data"].(map[string]interface{}), nil
+				}
+			} else {
+				return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
+			}
+		}
+		// END TODO
 	}
 
 }
