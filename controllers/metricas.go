@@ -15,6 +15,8 @@ type MetricasController struct {
 // URLMapping ...
 func (c *MetricasController) URLMapping() {
 	c.Mapping("MetricasHeteroevaluacion", c.MetricasHeteroevaluacion)
+	c.Mapping("MetricasAutoevaluacion", c.MetricasAutoevaluacion)
+	c.Mapping("MetricasCoevaluacion", c.MetricasCoevaluacion)
 }
 
 // Post ...
