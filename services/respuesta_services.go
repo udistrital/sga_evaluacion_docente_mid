@@ -33,8 +33,8 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 				if itemID, ok := item["item_id"]; ok {
 					metadata["item_id"] = itemID
 
-					if valor, ok := item["campo_id"]; ok { //id del campo hijo
-						metadata["campo_id"] = valor
+					if campo, ok := item["campo_id"]; ok { //id del campo hijo
+						metadata["campo_id"] = campo
 					}
 					if valor, ok := item["valor"]; ok {
 						metadata["valor"] = valor
@@ -160,7 +160,26 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	if errNuevoForm != nil {
 		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
 	} else {
-		return response["Data"].(map[string]interface{}), nil
+		// TODO: ajuste temporal
+		if response["Success"] == true {
+			return response["Data"].(map[string]interface{}), nil
+		} else {
+			var resp map[string]interface{}
+			fmt.Println("goes by here")
+			errCheck := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
+			if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
+				nuevoFormulario["TerceroId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
+				errNuevoForm = request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
+				if errNuevoForm != nil {
+					return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
+				} else {
+					return response["Data"].(map[string]interface{}), nil
+				}
+			} else {
+				return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
+			}
+		}
+		// END TODO
 	}
 
 }
@@ -198,7 +217,7 @@ func InactivarRespuesta(id int) error {
 }
 
 func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, error) {
-	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/"
+	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/?limit=0"
 	var response map[string]interface{}
 	err := request.SendJson(url, "GET", &response, nil)
 	if err != nil {
