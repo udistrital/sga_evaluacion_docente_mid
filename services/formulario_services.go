@@ -12,7 +12,7 @@ import (
 
 // id tipo formulario hace referencia a proceso_id de la tabla plantilla
 func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
-
+	var formularioID int
 	var plantilla map[string]interface{}
 	errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?query=ProcesoId:%v&Activo:true&sortby=Id&order=asc&limit=0", id_tipo_formulario), &plantilla)
 	if errPlantilla != nil || fmt.Sprintf("%v", plantilla) == "[map[]]" {
@@ -51,6 +51,19 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		itemCamposMap[itemId] = append(itemCamposMap[itemId], campoInfo)
 	}
 
+	var res map[string]interface{}
+	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_periodo, id_tercero, id_espacio), &res)
+
+	if errFormulario == nil {
+		if data, ok := res["Data"].([]interface{}); ok && len(data) > 0 {
+			if formulario, ok := data[0].(map[string]interface{}); ok && len(formulario) > 0 {
+				if id, exists := formulario["Id"].(float64); exists {
+					formularioID = int(id)
+				}
+			}
+		}
+	}
+
 	for _, item := range data {
 		itemMap := item.(map[string]interface{})
 		seccion := itemMap["SeccionId"].(map[string]interface{})
@@ -63,7 +76,6 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 				break
 			}
 		}
-
 		if seccionEncontrada == nil {
 			seccionNueva := map[string]interface{}{
 				"id":     seccionId,
@@ -77,6 +89,13 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 
 		itemId := int(itemMap["ItemId"].(map[string]interface{})["Id"].(float64))
 		itemOrden := int(itemMap["ItemId"].(map[string]interface{})["Orden"].(float64))
+		if formularioID > 0 {
+			existe := VerificarRespuesta(formularioID, itemId)
+			if existe.Status == 200 {
+				APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, fmt.Sprintf("Ya se han registrado respuestas para este formulario"))
+				return APIResponseDTO
+			}
+		}
 		itemInfo := map[string]interface{}{
 			"id":     itemId,
 			"nombre": itemMap["ItemId"].(map[string]interface{})["Nombre"].(string),
@@ -103,12 +122,11 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		return secciones[i]["orden"].(int) < secciones[j]["orden"].(int)
 	})
 
-	// Aquí quedaría organizada como un arreglo de secciones con items ordenados
 	response := map[string]interface{}{
-		"docente":          id_tercero, // consultar cuando exista la data del tercero evaluado
-		"espacioAcademico": id_espacio, // consultar cuando exista la data del espacio académico
+		"docente":          id_tercero,
+		"espacioAcademico": id_espacio,
 		"seccion":          secciones,
-		"tipoEvaluacion":   id_tipo_formulario, // consultar a parámetro y se le pasa el id del tipo de evaluación
+		"tipoEvaluacion":   id_tipo_formulario,
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
