@@ -275,3 +275,67 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]in
 		"UIDs": documentos,
 	}
 }
+func CrearFormulario(data []byte) (APIResponseDTO requestresponse.APIResponse) {
+	var dataSource map[string]interface{}
+
+	if err := json.Unmarshal(data, &dataSource); err != nil {
+		return helpers.ErrEmiter(err, "error al deserializar los datos")
+	}
+
+	secciones, ok := dataSource["secciones"].([]interface{})
+	if ok {
+		for _, seccion := range secciones {
+			secMap, ok := seccion.(map[string]interface{})
+			if ok {
+				nombreSeccion := secMap["nombre"]
+				ordenSeccion := secMap["orden"]
+
+				fmt.Printf("Sección: %v, Orden: %v\n", nombreSeccion, ordenSeccion)
+
+				items, ok := secMap["items"].([]interface{})
+				if ok {
+
+					for _, item := range items {
+						itemMap, ok := item.(map[string]interface{})
+						if ok {
+							nombreItem := itemMap["nombre"]
+							ordenItem := itemMap["orden"]
+							campoID := itemMap["campo_id"]
+							porcentaje := itemMap["porcentaje"]
+							nuevoItem := map[string]interface{}{
+								"Activo":     true,
+								"Nombre":     nombreItem,
+								"Orden":      ordenItem,
+								"Porcentaje": porcentaje,
+							}
+							var newItem map[string]interface{}
+							errResItem := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/item/", "POST", &newItem, nuevoItem)
+							if errResItem != nil {
+								APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar uno de los items")
+								return APIResponseDTO
+							}
+							itemID := newItem["Data"].(map[string]interface{})["Id"].(float64)
+							nuevoItemCampo := map[string]interface{}{
+								"Activo":     true,
+								"CampoId":    map[string]interface{}{"Id": campoID},
+								"ItemId":     map[string]interface{}{"Id": itemID},
+								"Porcentaje": porcentaje,
+							}
+							var newItemCampo map[string]interface{}
+							errResItemCampo := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/item_campo/", "POST", &newItemCampo, nuevoItemCampo)
+							if errResItemCampo != nil {
+								APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar uno de los items_campo")
+								return APIResponseDTO
+							}
+							fmt.Printf("  Ítem: %v, Orden: %v, Campo ID: %v,Item ID: %v, Porcentaje: %v\n", nombreItem, ordenItem, campoID, itemID, porcentaje)
+							fmt.Print(nuevoItem)
+							fmt.Print(nuevoItemCampo)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, dataSource, "Se ha registrado el formulario c:")
+}

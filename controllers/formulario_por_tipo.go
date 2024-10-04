@@ -58,7 +58,7 @@ func (c *Formulario_por_tipoController) PostFormularioTipo() {
 	data := c.Ctx.Input.RequestBody
 
 	if data != nil {
-		respuesta := services.MetricasAutoevaluacion(data)
+		respuesta := services.CrearFormulario(data)
 		c.Ctx.Output.SetStatus(respuesta.Status)
 		c.Data["json"] = respuesta
 		c.ServeJSON()
