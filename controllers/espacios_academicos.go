@@ -7,30 +7,30 @@ import (
 	"github.com/udistrital/utils_oas/requestresponse"
 )
 
-// CargaAcademicaController operations for CargaAcademica
-type CargaAcademicaController struct {
+// EspacioAcademicoController operations for EspacioAcademico
+type EspacioAcademicoController struct {
 	beego.Controller
 }
 
 // URLMapping ...
-func (c *CargaAcademicaController) URLMapping() {
-	c.Mapping("Post", c.PostCargaAcademica)
+func (c *EspacioAcademicoController) URLMapping() {
+	c.Mapping("Post", c.PostEspacioAcademico)
 }
 
-// PostCargaAcademica ...
-// @Title PostCargaAcademica
-// @Description query CargaAcademica
+// PostEspacioAcademico ...
+// @Title PostEspacioAcademico
+// @Description query EspacioAcademico
 // @Param	body		body 	models.Parametros	true		"body for Parametros content"
 // @Success 200 {object} models.Parametros
 // @Failure 404 body is empty
 // @router / [post]
-func (c *CargaAcademicaController) PostCargaAcademica() {
+func (c *EspacioAcademicoController) PostEspacioAcademico() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
 	data := c.Ctx.Input.RequestBody
 
 	if data != nil {
-		respuesta := services.ConsultarCarga(data)
+		respuesta := services.ConsultarEspacios(data)
 		c.Ctx.Output.SetStatus(respuesta.Status)
 		c.Data["json"] = respuesta
 		c.ServeJSON()
