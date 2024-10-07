@@ -1,15 +1,10 @@
 package helpers
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"sync"
 	"time"
 
-	"github.com/beego/beego"
+	"github.com/udistrital/utils_oas/request"
 )
 
 type Auth struct {
@@ -37,66 +32,28 @@ func (a *Auth) isTokenExpired() bool {
 	return time.Now().After(a.ExpiryTime)
 }
 
-func GetToken() (a *Auth) {
+func GetToken(tokenRequest LoginPayload, url string) (a *Auth) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	if instance == nil || instance.isTokenExpired() {
-		instance = createToken()
+		instance = createToken(tokenRequest, url)
 	}
 	return instance
 }
 
-func createToken() (a *Auth) {
-	tokenRequest := LoginPayload{
-		Username: beego.AppConfig.String("UsernameOdin"),
-		Password: beego.AppConfig.String("PasswordOdin"),
-		Version:  beego.AppConfig.String("VersionOdin"),
-	}
-
-	jsonData, err := json.Marshal(tokenRequest)
-	if err != nil {
-		fmt.Println("Error al convertir datos a JSON:", err)
-		return
-	}
-
-	req, err := http.NewRequest("POST", "https://"+beego.AppConfig.String("OdinService")+"odin/auth/login", bytes.NewBuffer(jsonData))
-	if err != nil {
-		fmt.Println("Error creando la solicitud:", err)
-		return
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error en la solicitud POST:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("Error: estado de la respuesta %d\n", resp.StatusCode)
-		return
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error leyendo el cuerpo de la respuesta:", err)
-		return
-	}
-
+func createToken(tokenRequest LoginPayload, url string) (a *Auth) {
 	var loginResp LoginResponse
-	err = json.Unmarshal(body, &loginResp)
+	err := request.SendJson(url, "POST", &loginResp, tokenRequest)
+
 	if err != nil {
-		fmt.Println("Error al parsear el JSON de la respuesta:", err)
-		return
+		return nil
 	}
 
-	instance.Token = loginResp.Token
-	instance.ExpiryTime = time.Now().Add(tokenTTL)
+	instance = &Auth{
+		Token:      loginResp.Token,
+		ExpiryTime: time.Now().Add(tokenTTL),
+	}
 
-	return
+	return instance
 }
