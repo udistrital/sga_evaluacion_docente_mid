@@ -28,6 +28,11 @@ func init() {
 				&controllers.MetricasController{},
 			),
 		),
+		beego.NSNamespace("/carga_academica",
+			beego.NSInclude(
+				&controllers.CargaAcademicaController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
