@@ -373,8 +373,26 @@ func CrearFormulario(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	}
 
 	if revertir {
-		fmt.Println("IDs de los Items:", itemIDs)
 		fmt.Println("IDs de las Plantillas:", plantillaIDs)
+
+		if len(plantillaIDs) > 0 {
+			for _, id := range plantillaIDs {
+				var plantilla map[string]interface{}
+
+				errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("/plantilla?query=Id:%v&Activo:true&sortby=Id&order=asc&limit=0", id), &plantilla)
+				if errPlantilla == nil {
+
+					plantillaData := plantilla["Data"].(map[string]interface{})
+					plantillaData["Activo"] = false
+
+					var inactivaPlantilla map[string]interface{}
+					errPut := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("/plantilla/%v", id), "PUT", &inactivaPlantilla, plantillaData)
+					if errPut != nil {
+						return helpers.ErrEmiter(errPut, fmt.Sprintf("Error actualizando plantilla con ID %v: %v", id, errPut))
+					}
+				}
+			}
+		}
 	}
 
 	return requestresponse.APIResponseDTO(true, 200, dataSource, "Se ha registrado el formulario c:")
