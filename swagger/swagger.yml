@@ -73,6 +73,25 @@ paths:
           description: '{}'
         "403":
           description: body is empty
+    post:
+      tags:
+      - formulario_por_tipo
+      description: create PostFormularioTipo
+      operationId: Formulario_por_tipoController.Create
+      parameters:
+      - in: body
+        name: body
+        description: body for PostFormularioTipo content
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostFormularioTipo'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.PostFormularioTipo'
+        "403":
+          description: body is empty
   /metricas/Autoevaluacion:
     post:
       tags:
@@ -165,6 +184,9 @@ definitions:
     type: object
   models.Parametros:
     title: Parametros
+    type: object
+  models.PostFormularioTipo:
+    title: PostFormularioTipo
     type: object
   models.Respuesta_formulario:
     title: Respuesta_formulario
