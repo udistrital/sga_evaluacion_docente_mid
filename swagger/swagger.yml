@@ -72,6 +72,49 @@ paths:
             $ref: '#/definitions/models.PostFormularioTipo'
         "403":
           description: body is empty
+  /formulario_por_tipo/Coevaluacion:
+    get:
+      tags:
+      - formulario_por_tipo
+      description: Consultar los formularios por tipo id tercero y periodo
+      operationId: Formulario_por_tipoController.GetFormularioCo
+      parameters:
+      - in: query
+        name: id_periodo
+        description: Id del periodo
+        type: string
+      - in: query
+        name: id_tercero
+        description: Id del tercero
+        type: string
+      - in: query
+        name: id_espacio
+        description: Id del espacio
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "403":
+          description: body is empty
+    post:
+      tags:
+      - formulario_por_tipo
+      description: create PostFormularioCoevaluacion
+      operationId: Formulario_por_tipoController.Create
+      parameters:
+      - in: body
+        name: body
+        description: body for PostFormularioCoevaluacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostFormularioCoevaluacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.PostFormularioCoevaluacion'
+        "403":
+          description: body is empty
   /metricas/Autoevaluacion:
     post:
       tags:
@@ -164,6 +207,9 @@ definitions:
     type: object
   models.MetricasHeteroevaluacion:
     title: MetricasHeteroevaluacion
+    type: object
+  models.PostFormularioCoevaluacion:
+    title: PostFormularioCoevaluacion
     type: object
   models.PostFormularioTipo:
     title: PostFormularioTipo

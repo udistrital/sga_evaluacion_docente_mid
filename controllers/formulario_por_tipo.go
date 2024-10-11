@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/services"
 	"github.com/udistrital/utils_oas/errorhandler"
@@ -15,7 +17,9 @@ type Formulario_por_tipoController struct {
 // URLMapping ...
 func (c *Formulario_por_tipoController) URLMapping() {
 	c.Mapping("GetAll", c.GetFormularioTipo)
-	c.Mapping("GetAll", c.PostFormularioTipo)
+	c.Mapping("GetAll", c.GetFormularioCo)
+	c.Mapping("Post", c.PostFormularioTipo)
+	c.Mapping("Post", c.PostFormularioCoevaluacion)
 }
 
 // GetFormularioTipo ...
@@ -45,6 +49,31 @@ func (c *Formulario_por_tipoController) GetFormularioTipo() {
 	c.ServeJSON()
 }
 
+// GetFormularioCo ...
+// @Title GetFormularioCo
+// @Description Consultar los formularios por tipo id tercero y periodo
+// @Param	id_periodo	query	string	false	"Id del periodo"
+// @Param	id_tercero	query	string	false	"Id del tercero"
+// @Param	id_espacio	query	string	false	"Id del espacio"
+// @Success 200 {}
+// @Failure 403 body is empty
+// @router /Coevaluacion [get]
+func (c *Formulario_por_tipoController) GetFormularioCo() {
+	defer errorhandler.HandlePanic(&c.Controller)
+
+	id_periodo := c.GetString("id_periodo")
+	id_tercero := c.GetString("id_tercero")
+	id_espacio := c.GetString("id_espacio")
+
+	respuesta := services.FormularioCoevaluacion(id_periodo, id_tercero, id_espacio)
+
+	c.Ctx.Output.SetStatus(respuesta.Status)
+
+	c.Data["json"] = respuesta
+
+	c.ServeJSON()
+}
+
 // Post ...
 // @Title Create
 // @Description create PostFormularioTipo
@@ -59,6 +88,32 @@ func (c *Formulario_por_tipoController) PostFormularioTipo() {
 
 	if data != nil {
 		respuesta := services.CrearFormulario(data)
+		c.Ctx.Output.SetStatus(respuesta.Status)
+		c.Data["json"] = respuesta
+		c.ServeJSON()
+
+	} else {
+		c.Ctx.Output.SetStatus(400)
+		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Datos erroneos")
+		c.ServeJSON()
+	}
+}
+
+// Post ...
+// @Title Create
+// @Description create PostFormularioCoevaluacion
+// @Param	body		body 	models.PostFormularioCoevaluacion	true		"body for PostFormularioCoevaluacion content"
+// @Success 201 {object} models.PostFormularioCoevaluacion
+// @Failure 403 body is empty
+// @router /Coevaluacion [post]
+func (c *Formulario_por_tipoController) PostFormularioCoevaluacion() {
+	fmt.Println("entro")
+	defer errorhandler.HandlePanic(&c.Controller)
+
+	data := c.Ctx.Input.RequestBody
+
+	if data != nil {
+		respuesta := services.CrearFormularioCo(data)
 		c.Ctx.Output.SetStatus(respuesta.Status)
 		c.Data["json"] = respuesta
 		c.ServeJSON()
