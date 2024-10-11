@@ -14,7 +14,7 @@ type CargaAcademicaController struct {
 
 // URLMapping ...
 func (c *CargaAcademicaController) URLMapping() {
-	c.Mapping("Post", c.PostCargaAcademica)
+	c.Mapping("PostCargaAcademica", c.PostCargaAcademica)
 }
 
 // PostCargaAcademica ...

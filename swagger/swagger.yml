@@ -77,7 +77,7 @@ paths:
       tags:
       - formulario_por_tipo
       description: create PostFormularioTipo
-      operationId: Formulario_por_tipoController.Create
+      operationId: Formulario_por_tipoController.PostFormularioTipo
       parameters:
       - in: body
         name: body
@@ -96,8 +96,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasAutoevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasAutoevaluacion
+      operationId: MetricasController.MetricasAutoevaluacion
       parameters:
       - in: body
         name: body
@@ -116,8 +116,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasCoevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasCoevaluacion
+      operationId: MetricasController.MetricasCoevaluacion
       parameters:
       - in: body
         name: body
@@ -136,8 +136,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasHeteroevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasHeteroevaluacion
+      operationId: MetricasController.MetricasHeteroevaluacion
       parameters:
       - in: body
         name: body

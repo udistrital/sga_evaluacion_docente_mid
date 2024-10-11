@@ -14,8 +14,8 @@ type Formulario_por_tipoController struct {
 
 // URLMapping ...
 func (c *Formulario_por_tipoController) URLMapping() {
-	c.Mapping("GetAll", c.GetFormularioTipo)
-	c.Mapping("GetAll", c.PostFormularioTipo)
+	c.Mapping("GetFormularioTipo", c.GetFormularioTipo)
+	c.Mapping("PostFormularioTipo", c.PostFormularioTipo)
 }
 
 // GetFormularioTipo ...
@@ -45,8 +45,8 @@ func (c *Formulario_por_tipoController) GetFormularioTipo() {
 	c.ServeJSON()
 }
 
-// Post ...
-// @Title Create
+// PostFormularioTipo ...
+// @Title PostFormularioTipo
 // @Description create PostFormularioTipo
 // @Param	body		body 	models.PostFormularioTipo	true		"body for PostFormularioTipo content"
 // @Success 201 {object} models.PostFormularioTipo

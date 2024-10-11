@@ -14,7 +14,7 @@ type EspacioAcademicoController struct {
 
 // URLMapping ...
 func (c *EspacioAcademicoController) URLMapping() {
-	c.Mapping("Post", c.PostEspacioAcademico)
+	c.Mapping("PostEspacioAcademico", c.PostEspacioAcademico)
 }
 
 // PostEspacioAcademico ...

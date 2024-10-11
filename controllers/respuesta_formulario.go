@@ -14,7 +14,7 @@ type Respuesta_formularioController struct {
 
 // URLMapping ...
 func (c *Respuesta_formularioController) URLMapping() {
-	c.Mapping("Post", c.PostRespuestaFormulario)
+	c.Mapping("PostRespuestaFormulario", c.PostRespuestaFormulario)
 }
 
 // PostRespuestaFormulario ...
