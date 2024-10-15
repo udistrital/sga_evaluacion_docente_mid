@@ -13,7 +13,7 @@ import (
 
 // id tipo formulario hace referencia a proceso_id de la tabla plantilla
 func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
-
+	var formularioID int
 	var plantilla map[string]interface{}
 	errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?query=ProcesoId:%v&Activo:true&sortby=Id&order=asc&limit=0", id_tipo_formulario), &plantilla)
 	if errPlantilla != nil || fmt.Sprintf("%v", plantilla) == "[map[]]" {
@@ -62,6 +62,19 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 		itemCamposMap[itemId] = append(itemCamposMap[itemId], campoInfo)
 	}
 
+	var res map[string]interface{}
+	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_periodo, id_tercero, id_espacio), &res)
+
+	if errFormulario == nil {
+		if data, ok := res["Data"].([]interface{}); ok && len(data) > 0 {
+			if formulario, ok := data[0].(map[string]interface{}); ok && len(formulario) > 0 {
+				if id, exists := formulario["Id"].(float64); exists {
+					formularioID = int(id)
+				}
+			}
+		}
+	}
+
 	for _, item := range data {
 		itemMap := item.(map[string]interface{})
 		seccion := itemMap["SeccionId"].(map[string]interface{})
@@ -74,7 +87,6 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 				break
 			}
 		}
-
 		if seccionEncontrada == nil {
 			seccionNueva := map[string]interface{}{
 				"id":     seccionId,
@@ -88,6 +100,13 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 
 		itemId := int(itemMap["ItemId"].(map[string]interface{})["Id"].(float64))
 		itemOrden := int(itemMap["ItemId"].(map[string]interface{})["Orden"].(float64))
+		if formularioID > 0 {
+			existe := VerificarRespuesta(formularioID, itemId)
+			if existe.Status == 200 {
+				APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, fmt.Sprintf("Ya se han registrado respuestas para este formulario"))
+				return APIResponseDTO
+			}
+		}
 		itemInfo := map[string]interface{}{
 			"id":     itemId,
 			"nombre": itemMap["ItemId"].(map[string]interface{})["Nombre"].(string),
@@ -274,4 +293,126 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string) map[string]in
 	return map[string]interface{}{
 		"UIDs": documentos,
 	}
+}
+func CrearFormulario(data []byte) (APIResponseDTO requestresponse.APIResponse) {
+	var dataSource map[string]interface{}
+	var revertir bool = false
+	var itemIDs []float64
+	var plantillaIDs []float64
+
+	if err := json.Unmarshal(data, &dataSource); err != nil {
+		return helpers.ErrEmiter(err, "error al deserializar los datos")
+	}
+
+	secciones, ok := dataSource["secciones"].([]interface{})
+	if ok {
+		for _, seccion := range secciones {
+			secMap, ok := seccion.(map[string]interface{})
+			if ok {
+				nombreSeccion := secMap["nombre"]
+				ordenSeccion := secMap["orden"]
+
+				nuevaSec := map[string]interface{}{
+					"Activo": true,
+					"Nombre": nombreSeccion,
+					"Orden":  ordenSeccion,
+				}
+				var newSec map[string]interface{}
+				errResSec := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/seccion/", "POST", &newSec, nuevaSec)
+				if errResSec != nil {
+					revertir = true
+					APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar una de las secciones")
+					return APIResponseDTO
+				}
+				seccionID := newSec["Data"].(map[string]interface{})["Id"].(float64)
+
+				fmt.Printf("Sección: %v, Orden: %v, SecID: %v\n", nombreSeccion, ordenSeccion, seccionID)
+
+				items, ok := secMap["items"].([]interface{})
+				if ok {
+
+					for _, item := range items {
+						itemMap, ok := item.(map[string]interface{})
+						if ok {
+							nombreItem := itemMap["nombre"]
+							ordenItem := itemMap["orden"]
+							campoID := itemMap["campo_id"]
+							porcentaje := itemMap["porcentaje"]
+							nuevoItem := map[string]interface{}{
+								"Activo":     true,
+								"Nombre":     nombreItem,
+								"Orden":      ordenItem,
+								"Porcentaje": porcentaje,
+							}
+							var newItem map[string]interface{}
+							errResItem := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/item/", "POST", &newItem, nuevoItem)
+							if errResItem != nil {
+								revertir = true
+								APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar uno de los items")
+								return APIResponseDTO
+							}
+							itemID := newItem["Data"].(map[string]interface{})["Id"].(float64)
+							itemIDs = append(itemIDs, itemID)
+
+							nuevoItemCampo := map[string]interface{}{
+								"Activo":     true,
+								"CampoId":    map[string]interface{}{"Id": campoID},
+								"ItemId":     map[string]interface{}{"Id": itemID},
+								"Porcentaje": porcentaje,
+							}
+							var newItemCampo map[string]interface{}
+							errResItemCampo := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/item_campo/", "POST", &newItemCampo, nuevoItemCampo)
+							if errResItemCampo != nil {
+								revertir = true
+								APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar uno de los items_campo")
+								return APIResponseDTO
+							}
+							fmt.Printf("  Ítem: %v, Orden: %v, Campo ID: %v,Item ID: %v, Porcentaje: %v\n", nombreItem, ordenItem, campoID, itemID, porcentaje)
+							nuevaPlantilla := map[string]interface{}{
+								"Activo":       true,
+								"SeccionId":    map[string]interface{}{"Id": seccionID},
+								"ItemId":       map[string]interface{}{"Id": itemID},
+								"ProcesoId":    dataSource["proceso_id"],
+								"EstructuraId": dataSource["estructura"],
+							}
+							var newPlantilla map[string]interface{}
+							errResPlantilla := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/plantilla/", "POST", &newPlantilla, nuevaPlantilla)
+							if errResPlantilla != nil {
+								revertir = true
+								APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar una plantilla")
+								return APIResponseDTO
+							}
+							plantillaID := newPlantilla["Data"].(map[string]interface{})["Id"].(float64)
+							plantillaIDs = append(plantillaIDs, plantillaID)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if revertir {
+		fmt.Println("IDs de las Plantillas:", plantillaIDs)
+
+		if len(plantillaIDs) > 0 {
+			for _, id := range plantillaIDs {
+				var plantilla map[string]interface{}
+
+				errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("/plantilla?query=Id:%v&Activo:true&sortby=Id&order=asc&limit=0", id), &plantilla)
+				if errPlantilla == nil {
+
+					plantillaData := plantilla["Data"].(map[string]interface{})
+					plantillaData["Activo"] = false
+
+					var inactivaPlantilla map[string]interface{}
+					errPut := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("/plantilla/%v", id), "PUT", &inactivaPlantilla, plantillaData)
+					if errPut != nil {
+						return helpers.ErrEmiter(errPut, fmt.Sprintf("Error actualizando plantilla con ID %v: %v", id, errPut))
+					}
+				}
+			}
+		}
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, dataSource, "Se ha registrado el formulario c:")
 }
