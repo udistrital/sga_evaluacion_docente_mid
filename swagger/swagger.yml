@@ -5,6 +5,46 @@ info:
   version: 1.0.0
 basePath: /v1
 paths:
+  /carga_academica/:
+    post:
+      tags:
+      - carga_academica
+      description: query CargaAcademica
+      operationId: CargaAcademicaController.PostCargaAcademica
+      parameters:
+      - in: body
+        name: body
+        description: body for Parametros content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Parametros'
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Parametros'
+        "404":
+          description: body is empty
+  /espacios_academicos/:
+    post:
+      tags:
+      - espacios_academicos
+      description: query EspacioAcademico
+      operationId: EspacioAcademicoController.PostEspacioAcademico
+      parameters:
+      - in: body
+        name: body
+        description: body for Parametros content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Parametros'
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Parametros'
+        "404":
+          description: body is empty
   /formulario_por_tipo/:
     get:
       tags:
@@ -33,12 +73,31 @@ paths:
           description: '{}'
         "403":
           description: body is empty
+    post:
+      tags:
+      - formulario_por_tipo
+      description: create PostFormularioTipo
+      operationId: Formulario_por_tipoController.PostFormularioTipo
+      parameters:
+      - in: body
+        name: body
+        description: body for PostFormularioTipo content
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostFormularioTipo'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.PostFormularioTipo'
+        "403":
+          description: body is empty
   /metricas/Autoevaluacion:
     post:
       tags:
       - metricas
-      description: create MetricasAutoevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasAutoevaluacion
+      operationId: MetricasController.MetricasAutoevaluacion
       parameters:
       - in: body
         name: body
@@ -57,8 +116,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasCoevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasCoevaluacion
+      operationId: MetricasController.MetricasCoevaluacion
       parameters:
       - in: body
         name: body
@@ -77,8 +136,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasHeteroevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasHeteroevaluacion
+      operationId: MetricasController.MetricasHeteroevaluacion
       parameters:
       - in: body
         name: body
@@ -123,6 +182,12 @@ definitions:
   models.MetricasHeteroevaluacion:
     title: MetricasHeteroevaluacion
     type: object
+  models.Parametros:
+    title: Parametros
+    type: object
+  models.PostFormularioTipo:
+    title: PostFormularioTipo
+    type: object
   models.Respuesta_formulario:
     title: Respuesta_formulario
     type: object
@@ -136,3 +201,9 @@ tags:
 - name: metricas
   description: |
     MetricasController operations for Metricas
+- name: carga_academica
+  description: |
+    CargaAcademicaController operations for CargaAcademica
+- name: espacios_academicos
+  description: |
+    EspacioAcademicoController operations for EspacioAcademico
