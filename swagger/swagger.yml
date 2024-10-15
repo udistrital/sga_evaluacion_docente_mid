@@ -9,21 +9,41 @@ paths:
     post:
       tags:
       - carga_academica
-      description: create CargaAcademica
+      description: query CargaAcademica
       operationId: CargaAcademicaController.PostCargaAcademica
       parameters:
       - in: body
         name: body
-        description: body for CargaAcademica content
+        description: body for Parametros content
         required: true
         schema:
-          $ref: '#/definitions/models.CargaAcademica'
+          $ref: '#/definitions/models.Parametros'
       responses:
-        "201":
+        "200":
           description: ""
           schema:
-            $ref: '#/definitions/models.CargaAcademica'
-        "403":
+            $ref: '#/definitions/models.Parametros'
+        "404":
+          description: body is empty
+  /espacios_academicos/:
+    post:
+      tags:
+      - espacios_academicos
+      description: query EspacioAcademico
+      operationId: EspacioAcademicoController.PostEspacioAcademico
+      parameters:
+      - in: body
+        name: body
+        description: body for Parametros content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Parametros'
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Parametros'
+        "404":
           description: body is empty
   /formulario_por_tipo/:
     get:
@@ -57,7 +77,7 @@ paths:
       tags:
       - formulario_por_tipo
       description: create PostFormularioTipo
-      operationId: Formulario_por_tipoController.Create
+      operationId: Formulario_por_tipoController.PostFormularioTipo
       parameters:
       - in: body
         name: body
@@ -119,8 +139,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasAutoevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasAutoevaluacion
+      operationId: MetricasController.MetricasAutoevaluacion
       parameters:
       - in: body
         name: body
@@ -139,8 +159,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasCoevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasCoevaluacion
+      operationId: MetricasController.MetricasCoevaluacion
       parameters:
       - in: body
         name: body
@@ -159,8 +179,8 @@ paths:
     post:
       tags:
       - metricas
-      description: create MetricasHeteroevaluacion
-      operationId: MetricasController.Create
+      description: query MetricasHeteroevaluacion
+      operationId: MetricasController.MetricasHeteroevaluacion
       parameters:
       - in: body
         name: body
@@ -196,9 +216,6 @@ paths:
         "403":
           description: body is empty
 definitions:
-  models.CargaAcademica:
-    title: CargaAcademica
-    type: object
   models.MetricasAutoevaluacion:
     title: MetricasAutoevaluacion
     type: object
@@ -230,3 +247,6 @@ tags:
 - name: carga_academica
   description: |
     CargaAcademicaController operations for CargaAcademica
+- name: espacios_academicos
+  description: |
+    EspacioAcademicoController operations for EspacioAcademico
