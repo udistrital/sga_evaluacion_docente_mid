@@ -1,0 +1,138 @@
+swagger: "2.0"
+info:
+  title: SGA MID - Evaluación Docente
+  description: Microservicio MID del SGA MID que complementa evaluación docente
+  version: 1.0.0
+basePath: /v1
+paths:
+  /formulario_por_tipo/:
+    get:
+      tags:
+      - formulario_por_tipo
+      description: Consultar los formularios por tipo id tercero y periodo
+      operationId: Formulario_por_tipoController.GetFormularioTipo
+      parameters:
+      - in: query
+        name: id_tipo_formulario
+        description: Id del tipo formulario
+        type: string
+      - in: query
+        name: id_periodo
+        description: Id del periodo
+        type: string
+      - in: query
+        name: id_tercero
+        description: Id del tercero
+        type: string
+      - in: query
+        name: id_espacio
+        description: Id del espacio
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "403":
+          description: body is empty
+  /metricas/Autoevaluacion:
+    post:
+      tags:
+      - metricas
+      description: create MetricasAutoevaluacion
+      operationId: MetricasController.Create
+      parameters:
+      - in: body
+        name: body
+        description: body for MetricasAutoevaluacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.MetricasAutoevaluacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.MetricasAutoevaluacion'
+        "403":
+          description: body is empty
+  /metricas/Coevaluacion:
+    post:
+      tags:
+      - metricas
+      description: create MetricasCoevaluacion
+      operationId: MetricasController.Create
+      parameters:
+      - in: body
+        name: body
+        description: body for MetricasCoevaluacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.MetricasCoevaluacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.MetricasCoevaluacion'
+        "403":
+          description: body is empty
+  /metricas/Heteroevaluacion:
+    post:
+      tags:
+      - metricas
+      description: create MetricasHeteroevaluacion
+      operationId: MetricasController.Create
+      parameters:
+      - in: body
+        name: body
+        description: body for MetricasHeteroevaluacion content
+        required: true
+        schema:
+          $ref: '#/definitions/models.MetricasHeteroevaluacion'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.MetricasHeteroevaluacion'
+        "403":
+          description: body is empty
+  /respuesta_formulario/:
+    post:
+      tags:
+      - respuesta_formulario
+      description: create Respuesta_formulario
+      operationId: Respuesta_formularioController.PostRespuestaFormulario
+      parameters:
+      - in: body
+        name: body
+        description: body for Respuesta_formulario content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Respuesta_formulario'
+      responses:
+        "201":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Respuesta_formulario'
+        "403":
+          description: body is empty
+definitions:
+  models.MetricasAutoevaluacion:
+    title: MetricasAutoevaluacion
+    type: object
+  models.MetricasCoevaluacion:
+    title: MetricasCoevaluacion
+    type: object
+  models.MetricasHeteroevaluacion:
+    title: MetricasHeteroevaluacion
+    type: object
+  models.Respuesta_formulario:
+    title: Respuesta_formulario
+    type: object
+tags:
+- name: formulario_por_tipo
+  description: |
+    Formulario_por_tipoController operations for Formulario_por_tipo
+- name: respuesta_formulario
+  description: |
+    Respuesta_formularioController operations for Respuesta_formulario
+- name: metricas
+  description: |
+    MetricasController operations for Metricas
