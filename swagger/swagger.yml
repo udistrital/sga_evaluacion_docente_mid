@@ -225,8 +225,13 @@ definitions:
   models.MetricasHeteroevaluacion:
     title: MetricasHeteroevaluacion
     type: object
+<<<<<<< HEAD
   models.PostFormularioCoevaluacion:
     title: PostFormularioCoevaluacion
+=======
+  models.Parametros:
+    title: Parametros
+>>>>>>> 1ea6e02cc0a869e9fe2a46771b5a6aba6fc6e978
     type: object
   models.PostFormularioTipo:
     title: PostFormularioTipo

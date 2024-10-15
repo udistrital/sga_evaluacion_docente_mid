@@ -135,7 +135,6 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 
 	for _, item := range dataList {
 		if formulario, ok := item.(map[string]interface{}); ok {
-			// Conversión explícita de float64 a int donde sea necesario
 			periodoID, ok := formulario["PeriodoId"].(float64)
 			if !ok {
 				return nil, fmt.Errorf("error al convertir PeriodoId a float64")
@@ -188,12 +187,9 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v", errNuevoForm)
 	}
 
-	// Revisa si el formulario fue creado con éxito
 	if response["Success"] == true {
 		return response["Data"].(map[string]interface{}), nil
 	}
-
-	// Verifica si se puede obtener el último formulario creado en caso de fallo
 	var resp map[string]interface{}
 	errCheck := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
 	if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
