@@ -10,6 +10,7 @@ paths:
       tags:
       - carga_academica
       description: query CargaAcademica
+      description: query CargaAcademica
       operationId: CargaAcademicaController.PostCargaAcademica
       parameters:
       - in: body
@@ -35,6 +36,7 @@ paths:
       - in: body
         name: body
         description: body for Parametros content
+        description: body for Parametros content
         required: true
         schema:
           $ref: '#/definitions/models.Parametros'
@@ -42,6 +44,30 @@ paths:
         "200":
           description: ""
           schema:
+            $ref: '#/definitions/models.Parametros'
+        "404":
+          description: body is empty
+  /espacios_academicos/:
+    post:
+      tags:
+      - espacios_academicos
+      description: query EspacioAcademico
+      operationId: EspacioAcademicoController.PostEspacioAcademico
+      parameters:
+      - in: body
+        name: body
+        description: body for Parametros content
+        required: true
+        schema:
+          $ref: '#/definitions/models.Parametros'
+          $ref: '#/definitions/models.Parametros'
+      responses:
+        "200":
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Parametros'
+        "404":
             $ref: '#/definitions/models.Parametros'
         "404":
           description: body is empty
@@ -77,6 +103,7 @@ paths:
       tags:
       - formulario_por_tipo
       description: create PostFormularioTipo
+      operationId: Formulario_por_tipoController.PostFormularioTipo
       operationId: Formulario_por_tipoController.PostFormularioTipo
       parameters:
       - in: body
@@ -141,6 +168,8 @@ paths:
       - metricas
       description: query MetricasAutoevaluacion
       operationId: MetricasController.MetricasAutoevaluacion
+      description: query MetricasAutoevaluacion
+      operationId: MetricasController.MetricasAutoevaluacion
       parameters:
       - in: body
         name: body
@@ -161,6 +190,8 @@ paths:
       - metricas
       description: query MetricasCoevaluacion
       operationId: MetricasController.MetricasCoevaluacion
+      description: query MetricasCoevaluacion
+      operationId: MetricasController.MetricasCoevaluacion
       parameters:
       - in: body
         name: body
@@ -179,6 +210,8 @@ paths:
     post:
       tags:
       - metricas
+      description: query MetricasHeteroevaluacion
+      operationId: MetricasController.MetricasHeteroevaluacion
       description: query MetricasHeteroevaluacion
       operationId: MetricasController.MetricasHeteroevaluacion
       parameters:
@@ -252,6 +285,9 @@ tags:
 - name: carga_academica
   description: |
     CargaAcademicaController operations for CargaAcademica
+- name: espacios_academicos
+  description: |
+    EspacioAcademicoController operations for EspacioAcademico
 - name: espacios_academicos
   description: |
     EspacioAcademicoController operations for EspacioAcademico
