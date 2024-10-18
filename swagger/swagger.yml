@@ -77,7 +77,7 @@ paths:
       tags:
       - formulario_por_tipo
       description: create PostFormularioTipo
-      operationId: Formulario_por_tipoController.PostFormularioTipo
+      operationId: Formulario_por_tipoController.Create
       parameters:
       - in: body
         name: body
