@@ -185,9 +185,6 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 func obtenerDescargaArchivos(id_tercero string, id_espacio string, itemId string) map[string]interface{} {
 	var formularioIds []string
 	var documentos []string
-	fmt.Println("aaaaaaaaaa")
-	fmt.Println(itemId)
-	fmt.Println("aaaaaaaaaa")
 
 	var response map[string]interface{}
 	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_tercero), &response)
@@ -222,9 +219,7 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string, itemId string
 
 								respuestaIdMap, ok := respuestaMap["RespuestaId"].(map[string]interface{})
 								if ok {
-									fmt.Println(formularioIdMap["Id"])
 									respuestaId := fmt.Sprintf("%v", respuestaIdMap["Id"])
-									fmt.Println(respuestaId)
 									var respuestaDetalleResponse map[string]interface{}
 									errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("/respuesta?query=Id:%v&limit=0", respuestaId), &respuestaDetalleResponse)
 
@@ -293,8 +288,6 @@ func CrearFormulario(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 				}
 				seccionID := newSec["Data"].(map[string]interface{})["Id"].(float64)
 
-				fmt.Printf("Sección: %v, Orden: %v, SecID: %v\n", nombreSeccion, ordenSeccion, seccionID)
-
 				items, ok := secMap["items"].([]interface{})
 				if ok {
 
@@ -334,7 +327,6 @@ func CrearFormulario(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 								APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar uno de los items_campo")
 								return APIResponseDTO
 							}
-							fmt.Printf("  Ítem: %v, Orden: %v, Campo ID: %v,Item ID: %v, Porcentaje: %v\n", nombreItem, ordenItem, campoID, itemID, porcentaje)
 							nuevaPlantilla := map[string]interface{}{
 								"Activo":       true,
 								"SeccionId":    map[string]interface{}{"Id": seccionID},
@@ -359,7 +351,6 @@ func CrearFormulario(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	}
 
 	if revertir {
-		fmt.Println("IDs de las Plantillas:", plantillaIDs)
 
 		if len(plantillaIDs) > 0 {
 			for _, id := range plantillaIDs {
@@ -426,10 +417,6 @@ func FormularioCoevaluacion(id_periodo string, id_tercero string, id_espacio str
 			descargaArchivos := obtenerDescargaArchivos(id_tercero, id_espacio, strconv.Itoa(itemRel))
 			for key, value := range descargaArchivos {
 				campoInfo[key] = value
-				fmt.Println("//////////////////")
-				fmt.Println(key)
-				fmt.Println(value)
-				fmt.Println("//////////////////")
 				campoInfo["nombre"] = "descarga_archivos"
 				campoInfo["tipo_campo"] = 4672
 			}
@@ -555,8 +542,6 @@ func CrearFormularioCo(data []byte) (APIResponseDTO requestresponse.APIResponse)
 				}
 				seccionID := newSec["Data"].(map[string]interface{})["Id"].(float64)
 
-				fmt.Printf("Sección: %v, Orden: %v, SecID: %v\n", nombreSeccion, ordenSeccion, seccionID)
-
 				items, ok := secMap["items"].([]interface{})
 				if ok {
 
@@ -573,7 +558,6 @@ func CrearFormularioCo(data []byte) (APIResponseDTO requestresponse.APIResponse)
 
 							var itemID float64
 							if idExistente, existe := nombreItemMap[nombreItem]; existe {
-								fmt.Printf("Item ya existe: %s, usando itemID: %v\n", nombreItem, idExistente)
 								itemID = idExistente
 							} else {
 								nuevoItem := map[string]interface{}{
@@ -591,7 +575,6 @@ func CrearFormularioCo(data []byte) (APIResponseDTO requestresponse.APIResponse)
 								itemID = newItem["Data"].(map[string]interface{})["Id"].(float64)
 								itemIDs = append(itemIDs, itemID)
 								nombreItemMap[nombreItem] = itemID
-								fmt.Printf("Nuevo item creado: %s, itemID: %v\n", nombreItem, itemID)
 							}
 							nuevoItemCampo := map[string]interface{}{
 								"Activo":     true,
@@ -631,7 +614,6 @@ func CrearFormularioCo(data []byte) (APIResponseDTO requestresponse.APIResponse)
 	}
 
 	if revertir {
-		fmt.Println("IDs de las Plantillas:", plantillaIDs)
 
 		if len(plantillaIDs) > 0 {
 			for _, id := range plantillaIDs {

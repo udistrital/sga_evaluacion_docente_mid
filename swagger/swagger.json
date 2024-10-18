@@ -14,7 +14,6 @@
                     "carga_academica"
                 ],
                 "description": "query CargaAcademica",
-                "description": "query CargaAcademica",
                 "operationId": "CargaAcademicaController.PostCargaAcademica",
                 "parameters": [
                     {
@@ -52,7 +51,6 @@
                         "in": "body",
                         "name": "body",
                         "description": "body for Parametros content",
-                        "description": "body for Parametros content",
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.Parametros"
@@ -66,41 +64,6 @@
                             "$ref": "#/definitions/models.Parametros"
                         }
                     },
-                    "404": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
-        "/espacios_academicos/": {
-            "post": {
-                "tags": [
-                    "espacios_academicos"
-                ],
-                "description": "query EspacioAcademico",
-                "operationId": "EspacioAcademicoController.PostEspacioAcademico",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for Parametros content",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Parametros"
-                            "$ref": "#/definitions/models.Parametros"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                    "200": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/models.Parametros"
-                            "$ref": "#/definitions/models.Parametros"
-                        }
-                    },
-                    "404": {
                     "404": {
                         "description": "body is empty"
                     }
@@ -154,8 +117,7 @@
                     "formulario_por_tipo"
                 ],
                 "description": "create PostFormularioTipo",
-                "operationId": "Formulario_por_tipoController.PostFormularioTipo",
-                "operationId": "Formulario_por_tipoController.PostFormularioTipo",
+                "operationId": "Formulario_por_tipoController.Create",
                 "parameters": [
                     {
                         "in": "body",
@@ -180,79 +142,11 @@
                 }
             }
         },
-        "/formulario_por_tipo/Coevaluacion": {
-            "get": {
-                "tags": [
-                    "formulario_por_tipo"
-                ],
-                "description": "Consultar los formularios por tipo id tercero y periodo",
-                "operationId": "Formulario_por_tipoController.GetFormularioCo",
-                "parameters": [
-                    {
-                        "in": "query",
-                        "name": "id_periodo",
-                        "description": "Id del periodo",
-                        "type": "string"
-                    },
-                    {
-                        "in": "query",
-                        "name": "id_tercero",
-                        "description": "Id del tercero",
-                        "type": "string"
-                    },
-                    {
-                        "in": "query",
-                        "name": "id_espacio",
-                        "description": "Id del espacio",
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{}"
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "formulario_por_tipo"
-                ],
-                "description": "create PostFormularioCoevaluacion",
-                "operationId": "Formulario_por_tipoController.Create",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "description": "body for PostFormularioCoevaluacion content",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.PostFormularioCoevaluacion"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/models.PostFormularioCoevaluacion"
-                        }
-                    },
-                    "403": {
-                        "description": "body is empty"
-                    }
-                }
-            }
-        },
         "/metricas/Autoevaluacion": {
             "post": {
                 "tags": [
                     "metricas"
                 ],
-                "description": "query MetricasAutoevaluacion",
-                "operationId": "MetricasController.MetricasAutoevaluacion",
                 "description": "query MetricasAutoevaluacion",
                 "operationId": "MetricasController.MetricasAutoevaluacion",
                 "parameters": [
@@ -286,8 +180,6 @@
                 ],
                 "description": "query MetricasCoevaluacion",
                 "operationId": "MetricasController.MetricasCoevaluacion",
-                "description": "query MetricasCoevaluacion",
-                "operationId": "MetricasController.MetricasCoevaluacion",
                 "parameters": [
                     {
                         "in": "body",
@@ -317,8 +209,6 @@
                 "tags": [
                     "metricas"
                 ],
-                "description": "query MetricasHeteroevaluacion",
-                "operationId": "MetricasController.MetricasHeteroevaluacion",
                 "description": "query MetricasHeteroevaluacion",
                 "operationId": "MetricasController.MetricasHeteroevaluacion",
                 "parameters": [
@@ -390,13 +280,8 @@
             "title": "MetricasHeteroevaluacion",
             "type": "object"
         },
-<<<<<<< HEAD
-        "models.PostFormularioCoevaluacion": {
-            "title": "PostFormularioCoevaluacion",
-=======
         "models.Parametros": {
             "title": "Parametros",
->>>>>>> 1ea6e02cc0a869e9fe2a46771b5a6aba6fc6e978
             "type": "object"
         },
         "models.PostFormularioTipo": {
@@ -424,10 +309,6 @@
         {
             "name": "carga_academica",
             "description": "CargaAcademicaController operations for CargaAcademica\n"
-        },
-        {
-            "name": "espacios_academicos",
-            "description": "EspacioAcademicoController operations for EspacioAcademico\n"
         },
         {
             "name": "espacios_academicos",
