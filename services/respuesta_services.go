@@ -20,6 +20,8 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 	}
 
 	formulario, err := VerificarOCrearFormulario(data)
+	fmt.Println("Formulario: ", formulario)
+
 	if err != nil {
 		APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al verificar o crear el formulario")
 		return APIResponseDTO
@@ -45,14 +47,14 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 
 					plantilla, err := ObtenerPlantillaPorItemID(itemID)
 					if err != nil {
-						InactivarFormulario(formulario["Id"].(int))
+						//InactivarFormulario(formulario["Id"].(int))
 						APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al obtener la plantilla: %v", err))
 						return APIResponseDTO
 					}
 
 					metadataJSON, err := json.Marshal(metadata)
 					if err != nil {
-						InactivarFormulario(formulario["Id"].(int))
+						//InactivarFormulario(formulario["Id"].(int))
 						APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al serializar metadata: %v", err))
 						return APIResponseDTO
 					}
@@ -93,7 +95,7 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 						var response map[string]interface{}
 						errRelacion := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formrespuesta/", "POST", &response, relacion)
 						if errRelacion != nil {
-							InactivarFormulario(formulario["Id"].(int))
+							//InactivarFormulario(formulario["Id"].(int))
 							APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al crear la relación: %v", errRelacion))
 							return APIResponseDTO
 						}
@@ -108,7 +110,7 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 		return APIResponseDTO
 	}
 
-	InactivarFormulario(formulario["Id"].(int))
+	//InactivarFormulario(formulario["Id"].(int))
 	APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, "No se encontraron respuestas válidas")
 	return APIResponseDTO
 }
@@ -133,12 +135,36 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 
 	for _, item := range dataList {
 		if formulario, ok := item.(map[string]interface{}); ok {
+			periodoID, ok := formulario["PeriodoId"].(float64)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir PeriodoId a float64")
+			}
 
-			if formulario["PeriodoId"] == dataSource["id_periodo"] &&
-				formulario["TerceroId"] == dataSource["id_tercero"] &&
-				formulario["EvaluadoId"] == dataSource["id_evaluado"] &&
-				formulario["ProyectoCurricularId"] == dataSource["proyecto_curricular"] &&
-				formulario["EspacioAcademicoId"] == dataSource["espacio_academico"] {
+			terceroID, ok := formulario["TerceroId"].(float64)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir TerceroId a float64")
+			}
+
+			evaluadoID, ok := formulario["EvaluadoId"].(float64)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EvaluadoId a float64")
+			}
+
+			proyectoCurricularID, ok := formulario["ProyectoCurricularId"].(float64)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir ProyectoCurricularId a float64")
+			}
+
+			espacioAcademicoID, ok := formulario["EspacioAcademicoId"].(float64)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EspacioAcademicoId a float64")
+			}
+
+			if int(periodoID) == int(dataSource["id_periodo"].(float64)) &&
+				int(terceroID) == int(dataSource["id_tercero"].(float64)) &&
+				int(evaluadoID) == int(dataSource["id_evaluado"].(float64)) &&
+				int(proyectoCurricularID) == int(dataSource["proyecto_curricular"].(float64)) &&
+				int(espacioAcademicoID) == int(dataSource["espacio_academico"].(float64)) {
 
 				return formulario, nil
 			}
@@ -158,30 +184,24 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 
 	errNuevoForm := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
 	if errNuevoForm != nil {
-		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
-	} else {
-		// TODO: ajuste temporal
-		if response["Success"] == true {
-			return response["Data"].(map[string]interface{}), nil
-		} else {
-			var resp map[string]interface{}
-			fmt.Println("goes by here")
-			errCheck := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
-			if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
-				nuevoFormulario["TerceroId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
-				errNuevoForm = request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
-				if errNuevoForm != nil {
-					return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
-				} else {
-					return response["Data"].(map[string]interface{}), nil
-				}
-			} else {
-				return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
-			}
-		}
-		// END TODO
+		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v", errNuevoForm)
 	}
 
+	if response["Success"] == true {
+		return response["Data"].(map[string]interface{}), nil
+	}
+	var resp map[string]interface{}
+	errCheck := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
+	if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
+		nuevoFormulario["TerceroId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
+		errNuevoForm = request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
+		if errNuevoForm != nil {
+			return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v", errNuevoForm)
+		}
+		return response["Data"].(map[string]interface{}), nil
+	}
+
+	return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado")
 }
 
 func InactivarFormulario(id int) error {
