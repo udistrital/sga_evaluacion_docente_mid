@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -155,16 +156,17 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 				return nil, fmt.Errorf("error al convertir ProyectoCurricularId a float64")
 			}
 
-			espacioAcademicoID, ok := formulario["EspacioAcademicoId"].(float64)
+			espacioAcademicoID, ok := formulario["EspacioAcademicoId"].(string)
 			if !ok {
-				return nil, fmt.Errorf("error al convertir EspacioAcademicoId a float64")
+				return nil, fmt.Errorf("error al convertir EspacioAcademicoId a string")
 			}
+			espacioAcademicoID = strings.TrimSpace(espacioAcademicoID)
 
 			if int(periodoID) == int(dataSource["id_periodo"].(float64)) &&
 				int(terceroID) == int(dataSource["id_tercero"].(float64)) &&
 				int(evaluadoID) == int(dataSource["id_evaluado"].(float64)) &&
 				int(proyectoCurricularID) == int(dataSource["proyecto_curricular"].(float64)) &&
-				int(espacioAcademicoID) == int(dataSource["espacio_academico"].(float64)) {
+				espacioAcademicoID == strings.TrimSpace(dataSource["espacio_academico"].(string)) {
 
 				return formulario, nil
 			}
