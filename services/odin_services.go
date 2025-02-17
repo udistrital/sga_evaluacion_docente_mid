@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/astaxie/beego"
-	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
 	"github.com/udistrital/utils_oas/request"
 	"github.com/udistrital/utils_oas/requestresponse"
 )
@@ -28,7 +27,7 @@ func ConsultarCarga(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, fmt.Sprintf("Error al parsear el JSON: %v", err))
 		return APIResponseDTO
 	}
-	response := consultarDatos(dataSource, "api_carga_academica", "carga_academica")
+	response := consultarDatos(dataSource, "espacios_estudiante")
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
 }
@@ -39,32 +38,24 @@ func ConsultarEspacios(data []byte) (APIResponseDTO requestresponse.APIResponse)
 		APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, fmt.Sprintf("Error al parsear el JSON: %v", err))
 		return APIResponseDTO
 	}
-	response := consultarDatos(dataSource, "api_espacio_curso", "espacios_academicos")
+	response := consultarDatos(dataSource, "carga_academica_docente")
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
 }
 
-func consultarDatos(requestPayload map[string]interface{}, api string, proc string) []map[string]interface{} {
-	tokenRequest := helpers.LoginPayload{
-		Username: beego.AppConfig.String("UsernameOdin"),
-		Password: beego.AppConfig.String("PasswordOdin"),
-		Version:  beego.AppConfig.String("VersionOdin"),
-	}
-	odinService := beego.AppConfig.String("OdinService")
+func consultarDatos(requestPayload map[string]interface{}, service string) interface{} {
 
-	auth := helpers.GetToken(tokenRequest, "https://"+odinService+"odin/auth/login")
-	if auth == nil {
+	var respuesta interface{}
+
+	parametros := requestPayload["parametros"].(map[string]interface{})
+	identificacion := parametros["identificacion"].(string)
+
+	url := beego.AppConfig.String("ProtocolAdmin") + "://" +
+		beego.AppConfig.String("UrlWSO2") +
+		beego.AppConfig.String("NsAcademica") + "/" + service + "/" + identificacion
+
+	if err := request.GetJsonWSO2(url, &respuesta); err != nil {
 		return nil
 	}
-
-	var response []map[string]interface{}
-	request.SetHeader("Bearer " + auth.Token)
-	err := request.SendJson("https://"+odinService+"odin/gen/apis?api="+api+"&proc="+proc, "POST", &response, requestPayload)
-
-	if err != nil {
-		return nil
-	}
-
-	return response
-
+	return respuesta
 }
