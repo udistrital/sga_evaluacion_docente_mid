@@ -37,13 +37,14 @@ func (c *Formulario_por_tipoController) GetFormularioTipo() {
 	id_periodo := c.GetString("id_periodo")
 	id_tercero := c.GetString("id_tercero")
 	id_espacio := c.GetString("id_espacio")
+	id_grupo := c.GetString("id_grupo")
 
 	var respuesta requestresponse.APIResponse
 
 	if id_tipo_formulario == "5" {
 		respuesta = services.FormularioCoevaluacion(id_periodo, id_tercero, id_espacio)
 	} else {
-		respuesta = services.ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio)
+		respuesta = services.ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio, id_grupo)
 	}
 
 	c.Ctx.Output.SetStatus(respuesta.Status)

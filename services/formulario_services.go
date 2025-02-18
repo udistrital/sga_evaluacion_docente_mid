@@ -13,7 +13,7 @@ import (
 )
 
 // id tipo formulario hace referencia a proceso_id de la tabla plantilla
-func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
+func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero string, id_espacio string, id_grupo string) (APIResponseDTO requestresponse.APIResponse) {
 
 	var formularioID int
 	var plantilla map[string]interface{}
@@ -53,19 +53,19 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 			"porcentaje": itemCampoMap["Porcentaje"],
 			"escala":     obtenerCamposHijos(campoId, camposData),
 		}
-		/*if tipoCampo == 6686 && id_tipo_formulario == "5" { // 6 es carga de archivos
-			descargaArchivos := obtenerDescargaArchivos(id_tercero, id_espacio)
-			for key, value := range descargaArchivos {
-				campoInfo[key] = value
-				campoInfo["nombre"] = "descarga_archivos"
-				campoInfo["tipo_campo"] = 4672 // 5 es descarga de archivos
-			}
-		}*/
 		itemCamposMap[itemId] = append(itemCamposMap[itemId], campoInfo)
 	}
 
+	// Construir la consulta dinámicamente
+	query := fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v,PlantillaProcesoId:%v", id_periodo, id_tercero, id_espacio, id_tipo_formulario)
+	if id_grupo != "" {
+		query += fmt.Sprintf(",Grupos.id:%v", id_grupo)
+	}
+	query += "&sortby=Id&order=asc&limit=0&Activo=true"
+
+
 	var res map[string]interface{}
-	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_periodo, id_tercero, id_espacio), &res)
+	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+query, &res)
 
 	if errFormulario == nil {
 		if data, ok := res["Data"].([]interface{}); ok && len(data) > 0 {
@@ -75,6 +75,12 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 				}
 			}
 		}
+	}
+
+	// Si el formulario ya existe, retorna un error
+	if formularioID > 0 {
+		APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, "Ya existe un formulario para este grupo")
+		return APIResponseDTO
 	}
 
 	for _, item := range data {
@@ -102,13 +108,6 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 
 		itemId := int(itemMap["ItemId"].(map[string]interface{})["Id"].(float64))
 		itemOrden := int(itemMap["ItemId"].(map[string]interface{})["Orden"].(float64))
-		if formularioID > 0 {
-			existe := VerificarRespuesta(formularioID, itemId)
-			if existe.Status == 200 {
-				APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, fmt.Sprintf("Ya se han registrado respuestas para este formulario"))
-				return APIResponseDTO
-			}
-		}
 		itemInfo := map[string]interface{}{
 			"id":     itemId,
 			"nombre": itemMap["ItemId"].(map[string]interface{})["Nombre"].(string),
