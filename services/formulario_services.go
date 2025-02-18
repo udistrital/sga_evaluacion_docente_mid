@@ -63,6 +63,7 @@ func ConsultaFormulario(id_tipo_formulario string, id_periodo string, id_tercero
 	}
 	query += "&sortby=Id&order=asc&limit=0&Activo=true"
 
+	fmt.Println("Query: ", query)
 
 	var res map[string]interface{}
 	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+query, &res)
