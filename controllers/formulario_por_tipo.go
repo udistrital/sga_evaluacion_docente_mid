@@ -27,6 +27,7 @@ func (c *Formulario_por_tipoController) URLMapping() {
 // @Param	id_periodo	query	string	false	"Id del periodo"
 // @Param	id_tercero	query	string	false	"Id del tercero"
 // @Param	id_espacio	query	string	false	"Id del espacio"
+// @Param	id_grupo	query	string	false	"Id del grupo"
 // @Success 200 {}
 // @Failure 403 body is empty
 // @router / [get]
@@ -37,14 +38,15 @@ func (c *Formulario_por_tipoController) GetFormularioTipo() {
 	id_periodo := c.GetString("id_periodo")
 	id_tercero := c.GetString("id_tercero")
 	id_espacio := c.GetString("id_espacio")
+	id_grupo := c.GetString("id_grupo")
 
 	var respuesta requestresponse.APIResponse
 
-	if id_tipo_formulario == "5" {
-		respuesta = services.FormularioCoevaluacion(id_periodo, id_tercero, id_espacio)
-	} else {
-		respuesta = services.ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio)
-	}
+	// if id_tipo_formulario == "5" {
+	// 	respuesta = services.FormularioCoevaluacion(id_periodo, id_tercero, id_espacio)
+	// } else {
+	respuesta = services.ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio, id_grupo)
+	// }
 
 	c.Ctx.Output.SetStatus(respuesta.Status)
 	c.Data["json"] = respuesta
