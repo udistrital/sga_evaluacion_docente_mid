@@ -141,19 +141,24 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 				return nil, fmt.Errorf("error al convertir PeriodoId a float64")
 			}
 
-			terceroID, ok := formulario["TerceroId"].(float64)
+			evaluadorID, ok := formulario["EvaluadorId"].(string)
 			if !ok {
-				return nil, fmt.Errorf("error al convertir TerceroId a float64")
+				return nil, fmt.Errorf("error al convertir EvaluadorId a float64")
 			}
 
-			evaluadoID, ok := formulario["EvaluadoId"].(float64)
+			evaluadoID, ok := formulario["EvaluadoId"].(string)
 			if !ok {
 				return nil, fmt.Errorf("error al convertir EvaluadoId a float64")
 			}
 
-			proyectoCurricularID, ok := formulario["ProyectoCurricularId"].(float64)
+			espacioProyectoCurricularID, ok := formulario["EspacioProyectoCurricularId"].(string)
 			if !ok {
-				return nil, fmt.Errorf("error al convertir ProyectoCurricularId a float64")
+				return nil, fmt.Errorf("error al convertir EspacioProyectoCurricularId a float64")
+			}
+
+			evaluadorProyectoCurricularID, ok := formulario["EvaluadorProyectoCurricularId"].(string)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EvaluadorProyectoCurricularId a float64")
 			}
 
 			espacioAcademicoID, ok := formulario["EspacioAcademicoId"].(string)
@@ -166,17 +171,18 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 				return nil, fmt.Errorf("error al convertir Grupos a string")
 			}
 
-			plantillaProcesoID, ok := formulario["PlantillaProcesoId"].(float64)
+			procesoID, ok := formulario["ProcesoId"].(float64)
 			if !ok {
-				return nil, fmt.Errorf("error al convertir PlantillaProcesoId a float64")
+				return nil, fmt.Errorf("error al convertir ProcesoId a float64")
 			}
 			espacioAcademicoID = strings.TrimSpace(espacioAcademicoID)
 
 			if int(periodoID) == int(dataSource["id_periodo"].(float64)) &&
-				int(terceroID) == int(dataSource["id_tercero"].(float64)) &&
-				int(evaluadoID) == int(dataSource["id_evaluado"].(float64)) &&
-				int(proyectoCurricularID) == int(dataSource["proyecto_curricular"].(float64)) &&
-				int(plantillaProcesoID) == int(dataSource["plantilla_proceso_id"].(float64)) &&
+				evaluadorID == dataSource["id_evaluador"].(string) &&
+				evaluadoID == dataSource["id_evaluado"].(string) &&
+				espacioProyectoCurricularID == dataSource["proyecto_curricular_espacio"].(string) &&
+				evaluadorProyectoCurricularID == dataSource["proyecto_curricular_evaluador"].(string) &&
+				int(procesoID) == int(dataSource["proceso_id"].(float64)) &&
 				grupos == dataSource["grupos"] &&
 				espacioAcademicoID == strings.TrimSpace(dataSource["espacio_academico"].(string)) {
 
@@ -186,16 +192,17 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	}
 
 	nuevoFormulario := map[string]interface{}{
-		"Activo":               true,
-		"EspacioAcademicoId":   dataSource["espacio_academico"],
-		"EvaluadoId":           dataSource["id_evaluado"],
-		"FechaCreacion":        time.Now(),
-		"FechaModificacion":    time.Now(),
-		"Grupos":               dataSource["grupos"],
-		"PeriodoId":            dataSource["id_periodo"],
-		"ProyectoCurricularId": dataSource["proyecto_curricular"],
-		"TerceroId":            dataSource["id_tercero"],
-		"PlantillaProcesoId":   dataSource["plantilla_proceso_id"],
+		"Activo":                        true,
+		"EspacioAcademicoId":            dataSource["espacio_academico"],
+		"EvaluadoId":                    dataSource["id_evaluado"],
+		"FechaCreacion":                 time.Now(),
+		"FechaModificacion":             time.Now(),
+		"Grupos":                        dataSource["grupos"],
+		"PeriodoId":                     dataSource["id_periodo"],
+		"EspacioProyectoCurricularId":   dataSource["proyecto_curricular_espacio"],
+		"EvaluadorProyectoCurricularId": dataSource["proyecto_curricular_evaluador"],
+		"EvaluadorId":                   dataSource["id_evaluador"],
+		"ProcesoId":                     dataSource["proceso_id"],
 	}
 
 	errNuevoForm := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
@@ -209,7 +216,7 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	var resp map[string]interface{}
 	errCheck := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
 	if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
-		nuevoFormulario["TerceroId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
+		nuevoFormulario["EvaluadorId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
 		errNuevoForm = request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
 		if errNuevoForm != nil {
 			return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v", errNuevoForm)
