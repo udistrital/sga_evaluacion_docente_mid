@@ -52,7 +52,8 @@ func consultarDatos(requestPayload map[string]interface{}, service string) inter
 
 	url := beego.AppConfig.String("ProtocolAdmin") + "://" +
 		beego.AppConfig.String("UrlWSO2") +
-		beego.AppConfig.String("NsAcademica") + "/" + service + "/" + identificacion
+		beego.AppConfig.String("NsAcademica") + "/" + service + "/" + identificacion + "/0"
+		//beego.AppConfig.String("NsAcademica") + "/" + service + "/" + identificacion 
 
 	if err := request.GetJsonWSO2(url, &respuesta); err != nil {
 		return nil

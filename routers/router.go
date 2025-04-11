@@ -38,6 +38,11 @@ func init() {
 				&controllers.EspacioAcademicoController{},
 			),
 		),
+		beego.NSNamespace("/reporte_autoevaluacion_ii_tres_consejo",
+			beego.NSInclude(
+				&controllers.ReporteAutoevaluacionIITresConsejoController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
