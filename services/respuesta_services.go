@@ -3,10 +3,10 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
-	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
 	"github.com/udistrital/utils_oas/request"
 	"github.com/udistrital/utils_oas/requestresponse"
 )
@@ -134,26 +134,58 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("error al convertir los datos a la estructura esperada")
 	}
 
-	gruposInput, errGruposInput := helpers.ToGrupoSlice(dataSource["grupos"])
-	if errGruposInput != nil {
-		return nil, fmt.Errorf("error al convertir grupos de entrada: %w", errGruposInput)
-	}
-
 	for _, item := range dataList {
 		if formulario, ok := item.(map[string]interface{}); ok {
-			gruposForm, errGruposForm := helpers.ToGrupoSlice(formulario["Grupos"])
-			if errGruposForm != nil {
-				continue
+			periodoID, ok := formulario["PeriodoId"].(float64)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir PeriodoId a float64")
 			}
-			fmt.Println("Grupos Formulario: ", gruposForm)
-			if helpers.Normalize(formulario["PeriodoId"]) == helpers.Normalize(dataSource["id_periodo"]) &&
-				helpers.Normalize(formulario["EvaluadorId"]) == helpers.Normalize(dataSource["id_evaluador"]) &&
-				helpers.Normalize(formulario["EvaluadoId"]) == helpers.Normalize(dataSource["id_evaluado"]) &&
-				helpers.Normalize(formulario["EspacioProyectoCurricularId"]) == helpers.Normalize(dataSource["proyecto_curricular_espacio"]) &&
-				helpers.Normalize(formulario["EvaluadorProyectoCurricularId"]) == helpers.Normalize(dataSource["proyecto_curricular_evaluador"]) &&
-				helpers.Normalize(formulario["ProcesoId"]) == helpers.Normalize(dataSource["proceso_id"]) &&
-				helpers.GruposIguales(gruposForm, gruposInput) &&
-				helpers.Normalize(formulario["EspacioAcademicoId"]) == helpers.Normalize(dataSource["espacio_academico"]) {
+
+			evaluadorID, ok := formulario["EvaluadorId"].(string)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EvaluadorId a float64")
+			}
+
+			evaluadoID, ok := formulario["EvaluadoId"].(string)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EvaluadoId a float64")
+			}
+
+			espacioProyectoCurricularID, ok := formulario["EspacioProyectoCurricularId"].(string)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EspacioProyectoCurricularId a float64")
+			}
+
+			evaluadorProyectoCurricularID, ok := formulario["EvaluadorProyectoCurricularId"].(string)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EvaluadorProyectoCurricularId a float64")
+			}
+
+			espacioAcademicoID, ok := formulario["EspacioAcademicoId"].(string)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir EspacioAcademicoId a string")
+			}
+
+			grupos, ok := formulario["Grupos"].(string)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir Grupos a string")
+			}
+
+			procesoID, ok := formulario["ProcesoId"].(float64)
+			if !ok {
+				return nil, fmt.Errorf("error al convertir ProcesoId a float64")
+			}
+			espacioAcademicoID = strings.TrimSpace(espacioAcademicoID)
+
+			if int(periodoID) == int(dataSource["id_periodo"].(float64)) &&
+				evaluadorID == dataSource["id_evaluador"].(string) &&
+				evaluadoID == dataSource["id_evaluado"].(string) &&
+				espacioProyectoCurricularID == dataSource["proyecto_curricular_espacio"].(string) &&
+				evaluadorProyectoCurricularID == dataSource["proyecto_curricular_evaluador"].(string) &&
+				int(procesoID) == int(dataSource["proceso_id"].(float64)) &&
+				grupos == dataSource["grupos"] &&
+				espacioAcademicoID == strings.TrimSpace(dataSource["espacio_academico"].(string)) {
+
 				return formulario, nil
 			}
 		}
