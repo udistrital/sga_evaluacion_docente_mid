@@ -68,6 +68,10 @@ paths:
         name: id_espacio
         description: Id del espacio
         type: string
+      - in: query
+        name: id_grupo
+        description: Id del grupo
+        type: string
       responses:
         "200":
           description: '{}'
@@ -152,6 +156,110 @@ paths:
             $ref: '#/definitions/models.MetricasHeteroevaluacion'
         "403":
           description: body is empty
+  /reporte_autoevaluacion_ii_tres_consejo/:
+    get:
+      tags:
+      - reporte_autoevaluacion_ii_tres_consejo
+      description: Obtiene promedio y respuestas abiertas de autoevaluación II (tipo consejo) por evaluador
+      operationId: ReporteAutoevaluacionIITresConsejoController.GetReporteAutoevaluacionIITresConsejo
+      parameters:
+      - in: query
+        name: evaluador_id
+        description: ID del evaluador (documento)
+        required: true
+        type: string
+      - in: query
+        name: periodo_id
+        description: ID del periodo académico
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: proceso_id
+        description: ID del proceso de evaluación
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: nombre_evaluador
+        description: Nombre del evaluador
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '"Resultado del servicio de reporte"'
+          schema:
+            $ref: '#/definitions/interface{}'
+        "400":
+          description: el evaluador_id o ids inválidos
+        "500":
+          description: error interno al ejecutar la consulta
+  /reporte_coevaluacion_i_consejo/:
+    get:
+      tags:
+      - reporte_coevaluacion_i_consejo
+      description: Obtiene promedio y respuestas abiertas de coevaluacion i (tipo consejo) por evaluador
+      operationId: ReporteCoevaluacionIConsejoController.GetReporteCoevaluacionIConsejo
+      parameters:
+      - in: query
+        name: evaluador_id
+        description: ID del evaluador (documento)
+        required: true
+        type: string
+      - in: query
+        name: periodo_id
+        description: ID del periodo académico
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: proceso_id
+        description: ID del proceso de evaluación
+        required: true
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: '"Resultado del servicio de reporte"'
+          schema:
+            $ref: '#/definitions/interface{}'
+        "400":
+          description: el evaluador_id o ids inválidos
+        "500":
+          description: error interno al ejecutar la consulta
+  /reporte_heteroevaluacion_consejo/:
+    get:
+      tags:
+      - reporte_heteroevaluacion_consejo
+      description: Obtiene los promedios por ámbito y promedio general de heteroevaluación para un evaluado
+      operationId: ReporteHeteroevaluacionConsejoController.Get reporte de heteroevaluación - Consejo
+      parameters:
+      - in: query
+        name: evaluado_id
+        description: ID del evaluado (ej. documento)
+        required: true
+        type: string
+      - in: query
+        name: periodo_id
+        description: ID del periodo académico
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: proceso_id
+        description: ID del proceso
+        required: true
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: '"Resultado del servicio de reporte"'
+          schema:
+            $ref: '#/definitions/interface{}'
+        "400":
+          description: parámetros inválidos
+        "500":
+          description: error al ejecutar la consulta
   /respuesta_formulario/:
     post:
       tags:
@@ -173,6 +281,9 @@ paths:
         "403":
           description: body is empty
 definitions:
+  interface{}:
+    title: interface{}
+    type: object
   models.MetricasAutoevaluacion:
     title: MetricasAutoevaluacion
     type: object
@@ -207,3 +318,12 @@ tags:
 - name: espacios_academicos
   description: |
     EspacioAcademicoController operations for EspacioAcademico
+- name: reporte_autoevaluacion_ii_tres_consejo
+  description: |
+    ReporteAutoevaluacionIITresConsejoController operations for ReporteAutoevaluacionIITresConsejo
+- name: reporte_heteroevaluacion_consejo
+  description: |
+    ReporteHeteroevaluacionConsejoController operations for ReporteHeteroevaluacionConsejo
+- name: reporte_coevaluacion_i_consejo
+  description: |
+    ReporteCoevaluacionIConsejoController operations for ReporteCoevaluacionIConsejo
