@@ -53,6 +53,11 @@ func init() {
 				&controllers.ReporteCoevaluacionIConsejoController{},
 			),
 		),
+		beego.NSNamespace("/reporte_knowage",
+			beego.NSInclude(
+				&controllers.ReporteKnowageController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
