@@ -25,6 +25,32 @@ paths:
             $ref: '#/definitions/models.Parametros'
         "404":
           description: body is empty
+  /documento/documentos_concatenados/{periodo}/{evaluado}:
+    get:
+      tags:
+      - documento
+      description: Obtiene los documentos concatenados en base64 filtrados por evaluado_id y periodo_id
+      operationId: DocumentoController.GetConcatDocuments
+      parameters:
+      - in: path
+        name: periodo
+        description: Id del periodo (de parametros)
+        required: true
+        type: string
+      - in: path
+        name: evaluado
+        description: id del evaluado
+        required: true
+        type: string
+      responses:
+        "200":
+          description: se obtiene el documento concatenado en base64
+        "204":
+          description: con los parametros solicitados no se encontraron documentos
+        "400":
+          description: error en los parametros
+        "403":
+          description: invalid path
   /espacios_academicos/:
     post:
       tags:
@@ -327,3 +353,6 @@ tags:
 - name: reporte_coevaluacion_i_consejo
   description: |
     ReporteCoevaluacionIConsejoController operations for ReporteCoevaluacionIConsejo
+- name: documento
+  description: |
+    DocumentoController operations for Documentos

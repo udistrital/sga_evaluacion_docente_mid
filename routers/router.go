@@ -53,6 +53,11 @@ func init() {
 				&controllers.ReporteCoevaluacionIConsejoController{},
 			),
 		),
+		beego.NSNamespace("/documento",
+			beego.NSInclude(
+				&controllers.DocumentoController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
