@@ -48,10 +48,10 @@ steps:
     - push
 
 - name: go_build
-  image: golang:1.18
+  image: golang:1.23
   commands:
   - go mod init
-  - go get -t
+  - go mod tidy
   - GOOS=linux GOARCH=amd64 go build -o main
   when:
     branch:
@@ -136,7 +136,7 @@ steps:
     - push
 
 - name: update_aws_ecs
-  image: golang:1.18
+  image: golang:1.23
   environment:
     AWS_ACCESS_KEY_ID:
       from_secret: AWS_ACCESS_KEY_ID
