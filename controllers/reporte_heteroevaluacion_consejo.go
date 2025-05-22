@@ -3,6 +3,10 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/services"
+
+	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
+	"log"
+	"fmt"
 )
 
 // ReporteHeteroevaluacionConsejoController operations for ReporteHeteroevaluacionConsejo
@@ -25,6 +29,20 @@ func (c *ReporteHeteroevaluacionConsejoController) URLMapping() {
 // @Failure 400 parámetros inválidos
 // @Failure 500 error al ejecutar la consulta
 func (c *ReporteHeteroevaluacionConsejoController) Get() {
+
+	b64, err := helpers.CrearCertificadoAutoevaluacion(
+		"OMER CALDERON",
+		"12119277",
+		"601 - DOCTORADO INTERINSTITUCIONAL EN EDUCACIÓN",
+		"18 del mes 05 de 2025",
+	)
+	if err != nil {
+		log.Fatalf("Error creando PDF: %v", err)
+	}
+	fmt.Println("Base64 del PDF:", b64)
+
+	
+	//////////
 	evaluadoId := c.GetString("evaluado_id")
 	periodoId, err1 := c.GetInt("periodo_id")
 	procesoId, err2 := c.GetInt("proceso_id")
