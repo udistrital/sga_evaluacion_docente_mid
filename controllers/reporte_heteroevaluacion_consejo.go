@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/services"
+	"github.com/udistrital/sga_evaluacion_docente_mid/models"
 
 	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
 	"log"
@@ -40,6 +41,52 @@ func (c *ReporteHeteroevaluacionConsejoController) Get() {
 		log.Fatalf("Error creando PDF: %v", err)
 	}
 	fmt.Println("Base64 del PDF:", b64)
+
+	
+	//////////
+
+	////////
+
+
+	data := models.EmailTemplateData{
+		NombreUsuario:     "BARON CAMACHO LUZ AMPARO",
+		DocumentoUsuario:  "12.345.678",
+		NombreEvaluacion:  "Heteroevaluación",
+		NumeroPeriodo:     "61",
+		FechaEvaRealizada: "07 de mayo de 2025",
+		HoraEvaRealizada:  "09:40 AM",
+	}
+
+	adjuntos := []models.EmailAttachment{
+		{
+			ContentType: "application/pdf",
+			FileName:    "certificado.pdf",
+			Base64File:  b64, 
+		},
+	}
+
+	respuesta := services.EnviarEmail(
+		[]string{"jerodrigueza@udistrital.edu.co"},
+		"condor@udistrital.edu.co",
+		"PLANTILLA_EVALUACION_DOCENTE",
+		data,
+		adjuntos,
+	)
+
+	fmt.Println("Resultado del envío:", respuesta)
+
+	// sirve la creación del pdf
+
+	/*b64, err := helpers.CrearCertificadoAutoevaluacion(
+		"OMER CALDERON",
+		"12119277",
+		"601 - DOCTORADO INTERINSTITUCIONAL EN EDUCACIÓN",
+		"18 del mes 05 de 2025",
+	)
+	if err != nil {
+		log.Fatalf("Error creando PDF: %v", err)
+	}
+	fmt.Println("Base64 del PDF:", b64)*/
 
 	
 	//////////
