@@ -31,3 +31,22 @@ type EnvioEmailPayload struct {
 	Destinations        []EmailDestination `json:"Destinations"`
 	DefaultTemplateData EmailTemplateData  `json:"DefaultTemplateData"`
 }
+
+type DatosEmail struct {
+	Docente            string `json:"docente,omitempty"`
+	Estudiante         string `json:"estudiante,omitempty"`
+	ConsejoCurricular  string `json:"nombreConsejoCurricular,omitempty"`
+	EspacioAcademico   string `json:"espacioAcademico,omitempty"`
+	Grupo              string `json:"grupo,omitempty"`
+	ProyectoCurricular string `json:"proyectoCurricular,omitempty"`
+}
+
+type DatosEmailRequest struct {
+	NombreEvaluacion string         `json:"nombreEvaluacion"`
+	Periodo          int            `json:"periodo"`
+	Correo           string         `json:"correo"`
+	Documento        string         `json:"documento"`
+	Fecha            string         `json:"fecha"`
+	Hora             string         `json:"hora"`
+	DatosEmail       DatosEmail     `json:"datosEvaluacion"`
+}
