@@ -58,6 +58,11 @@ func init() {
 				&controllers.DocumentoController{},
 			),
 		),
+		beego.NSNamespace("/enviar_notificacion",
+			beego.NSInclude(
+				&controllers.EnviarEmailController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
