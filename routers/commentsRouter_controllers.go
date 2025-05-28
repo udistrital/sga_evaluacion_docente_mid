@@ -16,6 +16,24 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:DocumentoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:DocumentoController"],
+        beego.ControllerComments{
+            Method: "GetConcatDocuments",
+            Router: "/documentos_concatenados/:periodo/:evaluado",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:EnviarEmailController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:EnviarEmailController"],
+        beego.ControllerComments{
+            Method: "PostEnviarEmail",
+            Router: "/",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:EspacioAcademicoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:EspacioAcademicoController"],
         beego.ControllerComments{
             Method: "PostEspacioAcademico",
