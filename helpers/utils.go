@@ -101,36 +101,36 @@ func CrearCertificadoPdfEvaluacion(
 	}
 
 	switch nombreEva {
-		case "Autoevaluación I", "Heteroevaluación":
-			agregarContenido("El (La) estudiante ", nombre)
-			agregarContenido(", identificado (a) con No. ", cedula)
-			pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el periodo académico %s así:", periodoAcademico))
-			pdf.Ln(14)
-			agregarTabla("ESPACIO ACADÉMICO", espacioAcademico)
+	case "Autoevaluación I", "Heteroevaluación":
+		agregarContenido("El (La) estudiante ", nombre)
+		agregarContenido(", identificado (a) con No. ", cedula)
+		pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el periodo académico %s así:", periodoAcademico))
+		pdf.Ln(14)
+		agregarTabla("ESPACIO ACADÉMICO", espacioAcademico)
 
-		case "Coevaluación I":
-			agregarContenido("La persona docente ", nombre)
-			agregarContenido(", identificado (a) con cédula de ciudadanía No. ", cedula)
-			pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el grupo %s en el periodo académico %s así:", grupo, periodoAcademico))
-			pdf.Ln(14)
-			agregarTabla("ESPACIO ACADÉMICO", espacioAcademico)
+	case "Coevaluación I":
+		agregarContenido("La persona docente ", nombre)
+		agregarContenido(", identificado (a) con cédula de ciudadanía No. ", cedula)
+		pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el grupo %s en el periodo académico %s así:", grupo, periodoAcademico))
+		pdf.Ln(14)
+		agregarTabla("ESPACIO ACADÉMICO", espacioAcademico)
 
-		case "Autoevaluación II 3", "Autoevaluación II 2", "Autoevaluación II 1":
-			agregarContenido("La persona docente ", nombre)
-			agregarContenido(", identificado (a) con cédula de ciudadanía No. ", cedula)
-			pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el periodo académico %s así:", periodoAcademico))
-			pdf.Ln(14)
-			agregarTabla("ESPACIO ACADÉMICO", espacioAcademico)
+	case "Autoevaluación II 3", "Autoevaluación II 2", "Autoevaluación II 1":
+		agregarContenido("La persona docente ", nombre)
+		agregarContenido(", identificado (a) con cédula de ciudadanía No. ", cedula)
+		pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el periodo académico %s así:", periodoAcademico))
+		pdf.Ln(14)
+		agregarTabla("ESPACIO ACADÉMICO", espacioAcademico)
 
-		case "Coevaluación II":
-			agregarContenido("La persona ", nombre)
-			agregarContenido(", identificado (a) con No. ", cedula)
-			pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el periodo académico %s así:", periodoAcademico))
-			pdf.Ln(14)
-			agregarTabla("DOCENTE EVALUADO (A)", nombreEvaluado)
+	case "Coevaluación II":
+		agregarContenido("La persona ", nombre)
+		agregarContenido(", identificado (a) con No. ", cedula)
+		pdf.Write(6, fmt.Sprintf(", ha realizado la evaluación docente para el periodo académico %s así:", periodoAcademico))
+		pdf.Ln(14)
+		agregarTabla("DOCENTE EVALUADO (A)", nombreEvaluado)
 
-		default:
-			return "", fmt.Errorf("tipo de evaluación no reconocido: %s", nombreEva)
+	default:
+		return "", fmt.Errorf("tipo de evaluación no reconocido: %s", nombreEva)
 	}
 
 	pdf.SetFont("arial", "", 10)
