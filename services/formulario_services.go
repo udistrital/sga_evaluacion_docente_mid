@@ -152,8 +152,8 @@ const (
 )
 
 // id tipo formulario hace referencia a proceso_id de la tabla plantilla
-func ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio, id_grupo string) (APIResponseDTO requestresponse.APIResponse) {
-	plantilla, err := obtenerPlantilla(id_tipo_formulario)
+func ConsultaFormulario(idTipoFormulario, idPeriodo, idTercero, idEspacio, idGrupo string) (APIResponseDTO requestresponse.APIResponse) {
+	plantilla, err := obtenerPlantilla(idTipoFormulario)
 	if err != nil {
 		return helpers.ErrEmiter(err, "")
 	}
@@ -168,7 +168,7 @@ func ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio, 
 		return helpers.ErrEmiter(err, "")
 	}
 
-	formularioID, err := verificarFormularioExistente(id_periodo, id_tercero, id_espacio, id_tipo_formulario, id_grupo)
+	formularioID, err := verificarFormularioExistente(idPeriodo, idTercero, idEspacio, idTipoFormulario, idGrupo)
 	if err != nil {
 		return helpers.ErrEmiter(err, "")
 	}
@@ -182,11 +182,11 @@ func ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio, 
 	ordenarSeccionesYItems(secciones)
 
 	response := map[string]interface{}{
-		"docente":          id_tercero,
-		"espacioAcademico": id_espacio,
+		"docente":          idTercero,
+		"espacioAcademico": idEspacio,
 		"seccion":          secciones,
-		"tipoEvaluacion":   id_tipo_formulario,
-		"evaluacion":       id_tipo_formulario,
+		"tipoEvaluacion":   idTipoFormulario,
+		"evaluacion":       idTipoFormulario,
 	}
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
 }
@@ -445,8 +445,8 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 }*/
 
 
-func obtenerDescargaArchivos(id_tercero string, id_espacio string, itemId string) map[string]interface{} {
-	formularioIds, err := obtenerFormulariosIds(id_tercero)
+func obtenerDescargaArchivos(idTercero string, idEspacio string, itemId string) map[string]interface{} {
+	formularioIds, err := obtenerFormulariosIds(idTercero)
 	if err != nil {
 		return map[string]interface{}{"error": err.Error()}
 	}
@@ -471,9 +471,9 @@ func obtenerDescargaArchivos(id_tercero string, id_espacio string, itemId string
 	}
 }
 
-func obtenerFormulariosIds(id_tercero string) ([]string, error) {
+func obtenerFormulariosIds(idTercero string) ([]string, error) {
 	var response map[string]interface{}
-	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + fmt.Sprintf("formulario?query=EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_tercero)
+	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + fmt.Sprintf("formulario?query=EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", idTercero)
 	err := request.GetJson(url, &response)
 	if err != nil {
 		return nil, err
@@ -952,20 +952,20 @@ func rollbackPlantillas(plantillaIDs []float64) {
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
 }*/
 
-func FormularioCoevaluacion(id_periodo, id_tercero, id_espacio string) (APIResponseDTO requestresponse.APIResponse) {
-	formularioID := verificarFormularioExistenteDos(id_periodo, id_tercero, id_espacio)
+func FormularioCoevaluacion(idPeriodo, idTercero, idEspacio string) (APIResponseDTO requestresponse.APIResponse) {
+	formularioID := verificarFormularioExistenteDos(idPeriodo, idTercero, idEspacio)
 
 	plantillaData, itemCamposData, camposData, err := obtenerDatosPlantilla()
 	if err != nil {
 		return helpers.ErrEmiter(err, "Error al obtener datos de plantilla")
 	}
 
-	itemCamposMap := mapearItemCampos(itemCamposData, camposData, id_tercero, id_espacio)
+	itemCamposMap := mapearItemCampos(itemCamposData, camposData, idTercero, idEspacio)
 
 	secciones := construirSecciones(plantillaData, itemCamposMap, formularioID)
 	response := map[string]interface{}{
-		"docente":          id_tercero,
-		"espacioAcademico": id_espacio,
+		"docente":          idTercero,
+		"espacioAcademico": idEspacio,
 		"seccion":          secciones,
 	}
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
@@ -993,7 +993,7 @@ func obtenerDatosPlantilla() (plantillaData, itemCamposData, camposData []interf
 	return plantilla["Data"].([]interface{}), itemCampos["Data"].([]interface{}), campos["Data"].([]interface{}), nil
 }
 
-func mapearItemCampos(itemCamposData, camposData []interface{}, id_tercero, id_espacio string) map[int][]map[string]interface{} {
+func mapearItemCampos(itemCamposData, camposData []interface{}, idTercero, idEspacio string) map[int][]map[string]interface{} {
 	itemCamposMap := make(map[int][]map[string]interface{})
 
 	for _, ic := range itemCamposData {
@@ -1012,7 +1012,7 @@ func mapearItemCampos(itemCamposData, camposData []interface{}, id_tercero, id_e
 
 		if tipoCampo == 6 {
 			itemRel := int(icMap["Porcentaje"].(float64))
-			descarga := obtenerDescargaArchivos(id_tercero, id_espacio, strconv.Itoa(itemRel))
+			descarga := obtenerDescargaArchivos(idTercero, idEspacio, strconv.Itoa(itemRel))
 			for k, v := range descarga {
 				campoInfo[k] = v
 			}
@@ -1028,9 +1028,9 @@ func mapearItemCampos(itemCamposData, camposData []interface{}, id_tercero, id_e
 	return itemCamposMap
 }
 
-func verificarFormularioExistenteDos(id_periodo, id_tercero, id_espacio string) int {
+func verificarFormularioExistenteDos(id_periodo, idTercero, idEspacio string) int {
 	var res map[string]interface{}
-	url := fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_periodo, id_tercero, id_espacio)
+	url := fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_periodo, idTercero, idEspacio)
 	err := request.GetJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+url, &res)
 	if err != nil || res["Data"] == nil {
 		return 0

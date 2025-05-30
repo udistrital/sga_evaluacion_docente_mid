@@ -5,12 +5,6 @@ import (
 	"github.com/astaxie/beego/context/param"
 )
 
-const (
-	BaseControllerPath            = "github.com/udistrital/sga_evaluacion_docente_mid/controllers"
-	FormularioPorTipoControllerKey = BaseControllerPath + ":Formulario_por_tipoController"
-    MetricasControllerKey = BaseControllerPath + ":MetricasController"
-)
-
 func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:CargaAcademicaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:CargaAcademicaController"],
@@ -49,7 +43,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter[FormularioPorTipoControllerKey] = append(beego.GlobalControllerRouter[FormularioPorTipoControllerKey],
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:Formulario_por_tipoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:Formulario_por_tipoController"],
         beego.ControllerComments{
             Method: "GetFormularioTipo",
             Router: "/",
@@ -58,7 +52,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter[FormularioPorTipoControllerKey] = append(beego.GlobalControllerRouter[FormularioPorTipoControllerKey],
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:Formulario_por_tipoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:Formulario_por_tipoController"],
         beego.ControllerComments{
             Method: "PostFormularioTipo",
             Router: "/",
@@ -67,7 +61,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter[MetricasControllerKey] = append(beego.GlobalControllerRouter[MetricasControllerKey],
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"],
         beego.ControllerComments{
             Method: "MetricasAutoevaluacion",
             Router: "/Autoevaluacion",
@@ -76,7 +70,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter[MetricasControllerKey] = append(beego.GlobalControllerRouter[MetricasControllerKey],
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"],
         beego.ControllerComments{
             Method: "MetricasCoevaluacion",
             Router: "/Coevaluacion",
@@ -85,7 +79,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter[MetricasControllerKey] = append(beego.GlobalControllerRouter[MetricasControllerKey],
+    beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_evaluacion_docente_mid/controllers:MetricasController"],
         beego.ControllerComments{
             Method: "MetricasHeteroevaluacion",
             Router: "/Heteroevaluacion",

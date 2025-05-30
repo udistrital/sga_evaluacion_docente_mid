@@ -17,7 +17,7 @@ const (
 	EndpointFormulario = "/formulario/"
 )
 
-func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse) {
+/*func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	var dataSource map[string]interface{}
 	var respuestas []map[string]interface{}
 
@@ -120,7 +120,159 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 	//InactivarFormulario(formulario["Id"].(int))
 	APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, "No se encontraron respuestas válidas")
 	return APIResponseDTO
+}*/
+
+func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse) {
+	dataSource, err := parsearDataSource(data)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 400, nil, err.Error())
+	}
+
+	formulario, err := VerificarOCrearFormulario(data)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, "Error al verificar o crear el formulario")
+	}
+
+	respuestas, err := procesarRespuestas(dataSource["respuestas"], formulario)
+	if err != nil {
+		InactivarFormulario(formulario["Id"].(int))
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, respuestas, nil)
 }
+
+func parsearDataSource(data []byte) (map[string]interface{}, error) {
+	var dataSource map[string]interface{}
+	if err := json.Unmarshal(data, &dataSource); err != nil {
+		return nil, fmt.Errorf("Error al parsear el JSON: %v", err)
+	}
+	return dataSource, nil
+}
+
+func procesarRespuestas(respuestasRaw interface{}, formulario map[string]interface{}) ([]map[string]interface{}, error) {
+	var respuestas []map[string]interface{}
+	respList, ok := respuestasRaw.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("No se encontraron respuestas válidas")
+	}
+
+	for _, r := range respList {
+		respuesta, err := procesarUnaRespuesta(r, formulario)
+		if err != nil {
+			return nil, err
+		}
+		respuestas = append(respuestas, respuesta)
+	}
+	return respuestas, nil
+}
+
+func procesarUnaRespuesta(r interface{}, formulario map[string]interface{}) (map[string]interface{}, error) {
+	item, ok := r.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Formato inválido de respuesta")
+	}
+
+	metadata, err := construirMetadata(item)
+	if err != nil {
+		return nil, err
+	}
+
+	itemID := metadata["item_id"]
+	plantilla, err := ObtenerPlantillaPorItemID(itemID)
+	if err != nil {
+		return nil, fmt.Errorf("Error al obtener la plantilla: %v", err)
+	}
+
+	respuestaID, nuevaRes, err := guardarRespuesta(metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	formularioID := formulario["Id"].(float64)
+	plantillaID := plantilla["Id"].(float64)
+	existe := VerificarRespuesta(int(formularioID), int(plantillaID))
+
+	if existe.Status == 200 {
+		return nil, fmt.Errorf("Ya se han registrado respuestas para este formulario")
+	}
+
+	if err := relacionarRespuesta(int(formularioID), int(plantillaID), int(respuestaID)); err != nil {
+		return nil, err
+	}
+
+	return nuevaRes, nil
+}
+
+func construirMetadata(item map[string]interface{}) (map[string]interface{}, error) {
+	metadata := make(map[string]interface{})
+
+	itemID, ok := item["item_id"]
+	if !ok {
+		return nil, fmt.Errorf("Falta el campo item_id")
+	}
+	metadata["item_id"] = itemID
+
+	if campo, ok := item["campo_id"]; ok {
+		metadata["campo_id"] = campo
+	}
+	if valor, ok := item["valor"]; ok {
+		metadata["valor"] = valor
+	}
+	if archivos, ok := item["archivos"]; ok {
+		metadata["archivos"] = archivos
+	}
+
+	return metadata, nil
+}
+
+func guardarRespuesta(metadata map[string]interface{}) (float64, map[string]interface{}, error) {
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return 0, nil, fmt.Errorf("Error al serializar metadata: %v", err)
+	}
+
+	nuevaRespuesta := map[string]interface{}{
+		"Activo":            true,
+		"FechaCreacion":     time.Now(),
+		"FechaModificacion": time.Now(),
+		"Metadata":          string(metadataJSON),
+	}
+
+	var nuevaRes map[string]interface{}
+	errRespuestas := request.SendJson(
+		HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointRespuesta,
+		"POST", &nuevaRes, nuevaRespuesta,
+	)
+	if errRespuestas != nil {
+		return 0, nil, fmt.Errorf("Error al guardar una de las respuestas")
+	}
+
+	respuestaID := nuevaRes["Data"].(map[string]interface{})["Id"].(float64)
+	return respuestaID, nuevaRes, nil
+}
+
+func relacionarRespuesta(formularioID, plantillaID, respuestaID int) error {
+	relacion := map[string]interface{}{
+		"Activo":            true,
+		"FechaCreacion":     time.Now(),
+		"FechaModificacion": time.Now(),
+		"FormularioId":      map[string]interface{}{"Id": formularioID},
+		"PlantillaId":       map[string]interface{}{"Id": plantillaID},
+		"RespuestaId":       map[string]interface{}{"Id": respuestaID},
+	}
+
+	var response map[string]interface{}
+	err := request.SendJson(
+		HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+"/formrespuesta/",
+		"POST", &response, relacion,
+	)
+	if err != nil {
+		return fmt.Errorf("Error al crear la relación: %v", err)
+	}
+	return nil
+}
+
 
 /*func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	var dataSource map[string]interface{}
