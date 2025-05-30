@@ -34,18 +34,18 @@ func (c *Formulario_por_tipoController) URLMapping() {
 func (c *Formulario_por_tipoController) GetFormularioTipo() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
-	id_tipo_formulario := c.GetString("id_tipo_formulario")
-	id_periodo := c.GetString("id_periodo")
-	id_tercero := c.GetString("id_tercero")
-	id_espacio := c.GetString("id_espacio")
-	id_grupo := c.GetString("id_grupo")
+	idTipoFormulario := c.GetString("id_tipo_formulario")
+	idPeriodo := c.GetString("id_periodo")
+	idTercero := c.GetString("id_tercero")
+	idEspacio := c.GetString("id_espacio")
+	idGrupo := c.GetString("id_grupo")
 
 	var respuesta requestresponse.APIResponse
 
 	// if id_tipo_formulario == "5" {
 	// 	respuesta = services.FormularioCoevaluacion(id_periodo, id_tercero, id_espacio)
 	// } else {
-	respuesta = services.ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio, id_grupo)
+	respuesta = services.ConsultaFormulario(idTipoFormulario, idPeriodo, idTercero, idEspacio, idGrupo)
 	// }
 
 	c.Ctx.Output.SetStatus(respuesta.Status)

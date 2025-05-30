@@ -7,6 +7,8 @@ import (
 	"github.com/udistrital/utils_oas/requestresponse"
 )
 
+const MensajeDatosErroneos = "Datos erroneos"
+
 // MetricasController operations for Metricas
 type MetricasController struct {
 	beego.Controller
@@ -39,7 +41,7 @@ func (c *MetricasController) MetricasHeteroevaluacion() {
 
 	} else {
 		c.Ctx.Output.SetStatus(400)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Datos erroneos")
+		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, MensajeDatosErroneos)
 		c.ServeJSON()
 	}
 }
@@ -64,7 +66,7 @@ func (c *MetricasController) MetricasAutoevaluacion() {
 
 	} else {
 		c.Ctx.Output.SetStatus(400)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Datos erroneos")
+		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, MensajeDatosErroneos)
 		c.ServeJSON()
 	}
 }
@@ -89,7 +91,7 @@ func (c *MetricasController) MetricasCoevaluacion() {
 
 	} else {
 		c.Ctx.Output.SetStatus(400)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Datos erroneos")
+		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, MensajeDatosErroneos)
 		c.ServeJSON()
 	}
 }
