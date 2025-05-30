@@ -1028,9 +1028,9 @@ func mapearItemCampos(itemCamposData, camposData []interface{}, idTercero, idEsp
 	return itemCamposMap
 }
 
-func verificarFormularioExistenteDos(id_periodo, idTercero, idEspacio string) int {
+func verificarFormularioExistenteDos(idPeriodo, idTercero, idEspacio string) int {
 	var res map[string]interface{}
-	url := fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v&sortby=Id&order=asc&limit=0&Activo=true", id_periodo, idTercero, idEspacio)
+	url := fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v&sortby=Id&order=asc&limit=0&Activo=true", idPeriodo, idTercero, idEspacio)
 	err := request.GetJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+url, &res)
 	if err != nil || res["Data"] == nil {
 		return 0
