@@ -36,7 +36,7 @@ func (c *Formulario_por_tipoController) GetFormularioTipo() {
 
 	idTipoFormulario := c.GetString("id_tipo_formulario")
 	idPeriodo := c.GetString("id_periodo")
-	idTercero := c.GetString("id_tercero")
+	idTercero := c.GetString("id_evaluador")
 	idEspacio := c.GetString("id_espacio")
 	idGrupo := c.GetString("id_grupo")
 

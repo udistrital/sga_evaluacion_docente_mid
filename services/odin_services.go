@@ -38,7 +38,8 @@ func ConsultarEspacios(data []byte) (APIResponseDTO requestresponse.APIResponse)
 		APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, fmt.Sprintf("Error al parsear el JSON: %v", err))
 		return APIResponseDTO
 	}
-	response := consultarDatos(dataSource, "carga_academica_docente")
+	//response := consultarDatos(dataSource, "carga_academica_docente")
+	response := consultarDatos(dataSource, "carga_academica_docente_v2")
 
 	return requestresponse.APIResponseDTO(true, 200, response, "Consulta exitosa")
 }
@@ -53,7 +54,6 @@ func consultarDatos(requestPayload map[string]interface{}, service string) inter
 	url := beego.AppConfig.String("ProtocolAdmin") + "://" +
 		beego.AppConfig.String("UrlWSO2") +
 		beego.AppConfig.String("NsAcademica") + "/" + service + "/" + identificacion + "/0"
-
 	if err := request.GetJsonWSO2(url, &respuesta); err != nil {
 		return nil
 	}
