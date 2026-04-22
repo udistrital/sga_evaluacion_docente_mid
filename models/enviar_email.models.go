@@ -20,14 +20,14 @@ type Destination struct {
 }
 
 type EmailDestination struct {
-	Destination             Destination        `json:"Destination"`
-	ReplacementTemplateData EmailTemplateData  `json:"ReplacementTemplateData"`
-	Attachments             []EmailAttachment  `json:"Attachments"`
+	Destination             Destination       `json:"Destination"`
+	ReplacementTemplateData EmailTemplateData `json:"ReplacementTemplateData"`
+	Attachments             []EmailAttachment `json:"Attachments"`
 }
 
 type EnvioEmailPayload struct {
-	Source              string            `json:"Source"`
-	Template            string            `json:"Template"`
+	Source              string             `json:"Source"`
+	Template            string             `json:"Template"`
 	Destinations        []EmailDestination `json:"Destinations"`
 	DefaultTemplateData EmailTemplateData  `json:"DefaultTemplateData"`
 }
@@ -42,11 +42,11 @@ type DatosEmail struct {
 }
 
 type DatosEmailRequest struct {
-	NombreEvaluacion string         `json:"nombreEvaluacion"`
-	Periodo          int            `json:"periodo"`
-	Correo           string         `json:"correo"`
-	Documento        string         `json:"documento"`
-	Fecha            string         `json:"fecha"`
-	Hora             string         `json:"hora"`
-	DatosEmail       DatosEmail     `json:"datosEvaluacion"`
+	NombreEvaluacion string     `json:"nombreEvaluacion"`
+	Periodo          int        `json:"periodo"`
+	Correo           string     `json:"correo"`
+	Documento        string     `json:"documento"`
+	Fecha            string     `json:"fecha"`
+	Hora             string     `json:"hora"`
+	DatosEmail       DatosEmail `json:"datosEvaluacion"`
 }

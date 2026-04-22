@@ -1,13 +1,13 @@
 package helpers
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
+	"github.com/phpdave11/gofpdf"
 	"io/ioutil"
 	"os"
-	"github.com/pdfcpu/pdfcpu/pkg/api"
-	"bytes"
-	"github.com/phpdave11/gofpdf"
 )
 
 func MergeBase64PDFs(base64Docs []string) (string, error) {

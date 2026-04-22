@@ -13,7 +13,7 @@ import (
 
 const (
 	//HttpPrefix = "http://"
-	EndpointRespuesta = "/respuesta/"
+	EndpointRespuesta  = "/respuesta/"
 	EndpointFormulario = "/formulario/"
 )
 
@@ -273,7 +273,6 @@ func relacionarRespuesta(formularioID, plantillaID, respuestaID int) error {
 	return nil
 }
 
-
 /*func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	var dataSource map[string]interface{}
 
@@ -449,7 +448,6 @@ func crearFormulario(dataSource map[string]interface{}) (map[string]interface{},
 	return nil, fmt.Errorf("no se pudo crear el formulario: %w", err)
 }
 
-
 func InactivarFormulario(id int) error {
 	var formulario map[string]interface{}
 	err := request.GetJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointFormulario+fmt.Sprint(id), &formulario)
@@ -544,7 +542,6 @@ func ExtraerPlantillaSiCoincide(item interface{}, itemID interface{}) map[string
 
 	return nil
 }
-
 
 func VerificarRespuesta(formularioID int, plantillaID int) (APIResponseDTO requestresponse.APIResponse) {
 	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + "formrespuesta?query=Activo:true,FormularioId.Id:" + fmt.Sprint(formularioID) + ",PlantillaId.Id:" + fmt.Sprint(plantillaID)

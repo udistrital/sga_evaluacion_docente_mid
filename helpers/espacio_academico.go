@@ -34,7 +34,7 @@ func GetMapaEspacios(ids []int) (map[string]string, error) {
 	}
 	idsJoin := strings.Join(idStrings, ",")
 
-	url := beego.AppConfig.String("ProtocolAdmin") + "://" + beego.AppConfig.String("UrlWSO2") + beego.AppConfig.String("NsAcademica") + "/espacio_academico/" + idsJoin
+	url := beego.AppConfig.String("UrlWSO2") + beego.AppConfig.String("NsAcademica") + "/espacio_academico/" + idsJoin
 
 	resp, err := http.Get(url)
 	if err != nil {

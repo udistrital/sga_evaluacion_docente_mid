@@ -2,11 +2,11 @@ package services
 
 import (
 	"fmt"
-	"strconv"
 	"github.com/astaxie/beego"
+	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
 	"github.com/udistrital/utils_oas/request"
 	"github.com/udistrital/utils_oas/requestresponse"
-	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
+	"strconv"
 )
 
 type RespuestaHeteroevaluacionDTO struct {
@@ -54,4 +54,3 @@ func GetReporteHeteroevaluacionConsejo(evaluadoId string, periodoId int, proceso
 
 	return requestresponse.APIResponseDTO(true, 200, result, "Datos obtenidos correctamente.")
 }
-
