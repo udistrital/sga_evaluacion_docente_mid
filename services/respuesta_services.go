@@ -6,11 +6,18 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
 	"github.com/udistrital/utils_oas/request"
 	"github.com/udistrital/utils_oas/requestresponse"
 )
 
-func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse) {
+const (
+	//HttpPrefix = "http://"
+	EndpointRespuesta  = "/respuesta/"
+	EndpointFormulario = "/formulario/"
+)
+
+/*func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	var dataSource map[string]interface{}
 	var respuestas []map[string]interface{}
 
@@ -20,6 +27,8 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 	}
 
 	formulario, err := VerificarOCrearFormulario(data)
+	fmt.Println("Formulario: ", formulario)
+
 	if err != nil {
 		APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al verificar o crear el formulario")
 		return APIResponseDTO
@@ -45,14 +54,14 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 
 					plantilla, err := ObtenerPlantillaPorItemID(itemID)
 					if err != nil {
-						InactivarFormulario(formulario["Id"].(int))
+						//InactivarFormulario(formulario["Id"].(int))
 						APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al obtener la plantilla: %v", err))
 						return APIResponseDTO
 					}
 
 					metadataJSON, err := json.Marshal(metadata)
 					if err != nil {
-						InactivarFormulario(formulario["Id"].(int))
+						//InactivarFormulario(formulario["Id"].(int))
 						APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al serializar metadata: %v", err))
 						return APIResponseDTO
 					}
@@ -65,7 +74,7 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 					}
 
 					var nuevaRes map[string]interface{}
-					errRespuestas := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/respuesta/", "POST", &nuevaRes, nuevaRespuesta)
+					errRespuestas := request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointRespuesta, "POST", &nuevaRes, nuevaRespuesta)
 					if errRespuestas != nil {
 						InactivarFormulario(formulario["Id"].(int))
 						APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, "Error al guardar una de las respuestas")
@@ -91,9 +100,9 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 						}
 
 						var response map[string]interface{}
-						errRelacion := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formrespuesta/", "POST", &response, relacion)
+						errRelacion := request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+"/formrespuesta/", "POST", &response, relacion)
 						if errRelacion != nil {
-							InactivarFormulario(formulario["Id"].(int))
+							//InactivarFormulario(formulario["Id"].(int))
 							APIResponseDTO = requestresponse.APIResponseDTO(false, 500, nil, fmt.Sprintf("Error al crear la relación: %v", errRelacion))
 							return APIResponseDTO
 						}
@@ -108,12 +117,163 @@ func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse)
 		return APIResponseDTO
 	}
 
-	InactivarFormulario(formulario["Id"].(int))
+	//InactivarFormulario(formulario["Id"].(int))
 	APIResponseDTO = requestresponse.APIResponseDTO(false, 400, nil, "No se encontraron respuestas válidas")
 	return APIResponseDTO
+}*/
+
+func GuardarRespuestas(data []byte) (APIResponseDTO requestresponse.APIResponse) {
+	dataSource, err := parsearDataSource(data)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 400, nil, err.Error())
+	}
+
+	formulario, err := VerificarOCrearFormulario(data)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, "Error al verificar o crear el formulario")
+	}
+
+	respuestas, err := procesarRespuestas(dataSource["respuestas"], formulario)
+	if err != nil {
+		InactivarFormulario(formulario["Id"].(int))
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	return requestresponse.APIResponseDTO(true, 200, respuestas, nil)
 }
 
-func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
+func parsearDataSource(data []byte) (map[string]interface{}, error) {
+	var dataSource map[string]interface{}
+	if err := json.Unmarshal(data, &dataSource); err != nil {
+		return nil, fmt.Errorf("Error al parsear el JSON: %v", err)
+	}
+	return dataSource, nil
+}
+
+func procesarRespuestas(respuestasRaw interface{}, formulario map[string]interface{}) ([]map[string]interface{}, error) {
+	var respuestas []map[string]interface{}
+	respList, ok := respuestasRaw.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("No se encontraron respuestas válidas")
+	}
+
+	for _, r := range respList {
+		respuesta, err := procesarUnaRespuesta(r, formulario)
+		if err != nil {
+			return nil, err
+		}
+		respuestas = append(respuestas, respuesta)
+	}
+	return respuestas, nil
+}
+
+func procesarUnaRespuesta(r interface{}, formulario map[string]interface{}) (map[string]interface{}, error) {
+	item, ok := r.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Formato inválido de respuesta")
+	}
+
+	metadata, err := construirMetadata(item)
+	if err != nil {
+		return nil, err
+	}
+
+	itemID := metadata["item_id"]
+	plantilla, err := ObtenerPlantillaPorItemID(itemID)
+	if err != nil {
+		return nil, fmt.Errorf("Error al obtener la plantilla: %v", err)
+	}
+
+	respuestaID, nuevaRes, err := guardarRespuesta(metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	formularioID := formulario["Id"].(float64)
+	plantillaID := plantilla["Id"].(float64)
+	existe := VerificarRespuesta(int(formularioID), int(plantillaID))
+
+	if existe.Status == 200 {
+		return nil, fmt.Errorf("Ya se han registrado respuestas para este formulario")
+	}
+
+	if err := relacionarRespuesta(int(formularioID), int(plantillaID), int(respuestaID)); err != nil {
+		return nil, err
+	}
+
+	return nuevaRes, nil
+}
+
+func construirMetadata(item map[string]interface{}) (map[string]interface{}, error) {
+	metadata := make(map[string]interface{})
+
+	itemID, ok := item["item_id"]
+	if !ok {
+		return nil, fmt.Errorf("Falta el campo item_id")
+	}
+	metadata["item_id"] = itemID
+
+	if campo, ok := item["campo_id"]; ok {
+		metadata["campo_id"] = campo
+	}
+	if valor, ok := item["valor"]; ok {
+		metadata["valor"] = valor
+	}
+	if archivos, ok := item["archivos"]; ok {
+		metadata["archivos"] = archivos
+	}
+
+	return metadata, nil
+}
+
+func guardarRespuesta(metadata map[string]interface{}) (float64, map[string]interface{}, error) {
+	metadataJSON, err := json.Marshal(metadata)
+	if err != nil {
+		return 0, nil, fmt.Errorf("Error al serializar metadata: %v", err)
+	}
+
+	nuevaRespuesta := map[string]interface{}{
+		"Activo":            true,
+		"FechaCreacion":     time.Now(),
+		"FechaModificacion": time.Now(),
+		"Metadata":          string(metadataJSON),
+	}
+
+	var nuevaRes map[string]interface{}
+	errRespuestas := request.SendJson(
+		HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointRespuesta,
+		"POST", &nuevaRes, nuevaRespuesta,
+	)
+	if errRespuestas != nil {
+		return 0, nil, fmt.Errorf("Error al guardar una de las respuestas")
+	}
+
+	respuestaID := nuevaRes["Data"].(map[string]interface{})["Id"].(float64)
+	return respuestaID, nuevaRes, nil
+}
+
+func relacionarRespuesta(formularioID, plantillaID, respuestaID int) error {
+	relacion := map[string]interface{}{
+		"Activo":            true,
+		"FechaCreacion":     time.Now(),
+		"FechaModificacion": time.Now(),
+		"FormularioId":      map[string]interface{}{"Id": formularioID},
+		"PlantillaId":       map[string]interface{}{"Id": plantillaID},
+		"RespuestaId":       map[string]interface{}{"Id": respuestaID},
+	}
+
+	var response map[string]interface{}
+	err := request.SendJson(
+		HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+"/formrespuesta/",
+		"POST", &response, relacion,
+	)
+	if err != nil {
+		return fmt.Errorf("Error al crear la relación: %v", err)
+	}
+	return nil
+}
+
+/*func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	var dataSource map[string]interface{}
 
 	if err := json.Unmarshal(data, &dataSource); err != nil {
@@ -121,7 +281,7 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 	}
 
 	var response map[string]interface{}
-	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=Activo:true&sortby=Id&order=asc&limit=0"), &response)
+	errFormulario := request.GetJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=Activo:true&sortby=Id&order=asc&limit=0"), &response)
 	if errFormulario != nil {
 		return nil, fmt.Errorf("error en la petición GET: %w", errFormulario)
 	}
@@ -131,67 +291,171 @@ func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("error al convertir los datos a la estructura esperada")
 	}
 
+	gruposInput, errGruposInput := helpers.ToGrupoSlice(dataSource["grupos"])
+	if errGruposInput != nil {
+		return nil, fmt.Errorf("error al convertir grupos de entrada: %w", errGruposInput)
+	}
+
 	for _, item := range dataList {
 		if formulario, ok := item.(map[string]interface{}); ok {
-
-			if formulario["PeriodoId"] == dataSource["id_periodo"] &&
-				formulario["TerceroId"] == dataSource["id_tercero"] &&
-				formulario["EvaluadoId"] == dataSource["id_evaluado"] &&
-				formulario["ProyectoCurricularId"] == dataSource["proyecto_curricular"] &&
-				formulario["EspacioAcademicoId"] == dataSource["espacio_academico"] {
-
+			gruposForm, errGruposForm := helpers.ToGrupoSlice(formulario["Grupos"])
+			if errGruposForm != nil {
+				continue
+			}
+			fmt.Println("Grupos Formulario: ", gruposForm)
+			if helpers.Normalize(formulario["PeriodoId"]) == helpers.Normalize(dataSource["id_periodo"]) &&
+				helpers.Normalize(formulario["EvaluadorId"]) == helpers.Normalize(dataSource["id_evaluador"]) &&
+				helpers.Normalize(formulario["EvaluadoId"]) == helpers.Normalize(dataSource["id_evaluado"]) &&
+				helpers.Normalize(formulario["EspacioProyectoCurricularId"]) == helpers.Normalize(dataSource["proyecto_curricular_espacio"]) &&
+				helpers.Normalize(formulario["EvaluadorProyectoCurricularId"]) == helpers.Normalize(dataSource["proyecto_curricular_evaluador"]) &&
+				helpers.Normalize(formulario["ProcesoId"]) == helpers.Normalize(dataSource["proceso_id"]) &&
+				helpers.GruposIguales(gruposForm, gruposInput) &&
+				helpers.Normalize(formulario["EspacioAcademicoId"]) == helpers.Normalize(dataSource["espacio_academico"]) {
 				return formulario, nil
 			}
 		}
 	}
 
 	nuevoFormulario := map[string]interface{}{
-		"Activo":               true,
-		"EspacioAcademicoId":   dataSource["espacio_academico"],
-		"EvaluadoId":           dataSource["id_evaluado"],
-		"FechaCreacion":        time.Now(),
-		"FechaModificacion":    time.Now(),
-		"PeriodoId":            dataSource["id_periodo"],
-		"ProyectoCurricularId": dataSource["proyecto_curricular"],
-		"TerceroId":            dataSource["id_tercero"],
+		"Activo":                        true,
+		"EspacioAcademicoId":            dataSource["espacio_academico"],
+		"EvaluadoId":                    dataSource["id_evaluado"],
+		"FechaCreacion":                 time.Now(),
+		"FechaModificacion":             time.Now(),
+		"Grupos":                        dataSource["grupos"],
+		"PeriodoId":                     dataSource["id_periodo"],
+		"EspacioProyectoCurricularId":   dataSource["proyecto_curricular_espacio"],
+		"EvaluadorProyectoCurricularId": dataSource["proyecto_curricular_evaluador"],
+		"EvaluadorId":                   dataSource["id_evaluador"],
+		"ProcesoId":                     dataSource["proceso_id"],
 	}
 
-	errNuevoForm := request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
+	errNuevoForm := request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointFormulario, "POST", &response, nuevoFormulario)
 	if errNuevoForm != nil {
-		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
-	} else {
-		// TODO: ajuste temporal
-		if response["Success"] == true {
-			return response["Data"].(map[string]interface{}), nil
-		} else {
-			var resp map[string]interface{}
-			fmt.Println("goes by here")
-			errCheck := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
-			if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
-				nuevoFormulario["TerceroId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
-				errNuevoForm = request.SendJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/", "POST", &response, nuevoFormulario)
-				if errNuevoForm != nil {
-					return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
-				} else {
-					return response["Data"].(map[string]interface{}), nil
-				}
-			} else {
-				return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v")
-			}
-		}
-		// END TODO
+		return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v", errNuevoForm)
 	}
 
+	if response["Success"] == true {
+		return response["Data"].(map[string]interface{}), nil
+	}
+	var resp map[string]interface{}
+	errCheck := request.GetJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario?sortby=Id&order=desc&limit=1&fields=Id", &resp)
+	if errCheck == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
+		nuevoFormulario["EvaluadorId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
+		errNuevoForm = request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointFormulario, "POST", &response, nuevoFormulario)
+		if errNuevoForm != nil {
+			return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado, datos: %v", errNuevoForm)
+		}
+		return response["Data"].(map[string]interface{}), nil
+	}
+
+	return nil, fmt.Errorf("no se pudo obtener el ID del formulario creado")
+}*/
+
+func VerificarOCrearFormulario(data []byte) (map[string]interface{}, error) {
+	var dataSource map[string]interface{}
+	if err := json.Unmarshal(data, &dataSource); err != nil {
+		return nil, fmt.Errorf("error al deserializar los datos: %w", err)
+	}
+
+	dataList, err := obtenerFormulariosActivos()
+	if err != nil {
+		return nil, err
+	}
+
+	gruposInput, err := helpers.ToGrupoSlice(dataSource["grupos"])
+	if err != nil {
+		return nil, fmt.Errorf("error al convertir grupos de entrada: %w", err)
+	}
+
+	for _, item := range dataList {
+		if formularioCoincide(item, dataSource, gruposInput) {
+			return item.(map[string]interface{}), nil
+		}
+	}
+
+	// Crear nuevo formulario si no existe
+	return crearFormulario(dataSource)
+}
+
+func obtenerFormulariosActivos() ([]interface{}, error) {
+	var response map[string]interface{}
+	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + "/formulario?query=Activo:true&sortby=Id&order=asc&limit=0"
+	if err := request.GetJson(url, &response); err != nil {
+		return nil, fmt.Errorf("error en la petición GET: %w", err)
+	}
+
+	dataList, ok := response["Data"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("error al convertir los datos a la estructura esperada")
+	}
+	return dataList, nil
+}
+
+func formularioCoincide(item interface{}, dataSource map[string]interface{}, gruposInput []map[string]string) bool {
+	formulario, ok := item.(map[string]interface{})
+	if !ok {
+		return false
+	}
+
+	gruposForm, err := helpers.ToGrupoSlice(formulario["Grupos"])
+	if err != nil {
+		return false
+	}
+
+	return helpers.Normalize(formulario["PeriodoId"]) == helpers.Normalize(dataSource["id_periodo"]) &&
+		helpers.Normalize(formulario["EvaluadorId"]) == helpers.Normalize(dataSource["id_evaluador"]) &&
+		helpers.Normalize(formulario["EvaluadoId"]) == helpers.Normalize(dataSource["id_evaluado"]) &&
+		helpers.Normalize(formulario["EspacioProyectoCurricularId"]) == helpers.Normalize(dataSource["proyecto_curricular_espacio"]) &&
+		helpers.Normalize(formulario["EvaluadorProyectoCurricularId"]) == helpers.Normalize(dataSource["proyecto_curricular_evaluador"]) &&
+		helpers.Normalize(formulario["ProcesoId"]) == helpers.Normalize(dataSource["proceso_id"]) &&
+		helpers.GruposIguales(gruposForm, gruposInput) &&
+		helpers.Normalize(formulario["EspacioAcademicoId"]) == helpers.Normalize(dataSource["espacio_academico"])
+}
+
+func crearFormulario(dataSource map[string]interface{}) (map[string]interface{}, error) {
+	nuevoFormulario := map[string]interface{}{
+		"Activo":                        true,
+		"EspacioAcademicoId":            dataSource["espacio_academico"],
+		"EvaluadoId":                    dataSource["id_evaluado"],
+		"FechaCreacion":                 time.Now(),
+		"FechaModificacion":             time.Now(),
+		"Grupos":                        dataSource["grupos"],
+		"PeriodoId":                     dataSource["id_periodo"],
+		"EspacioProyectoCurricularId":   dataSource["proyecto_curricular_espacio"],
+		"EvaluadorProyectoCurricularId": dataSource["proyecto_curricular_evaluador"],
+		"EvaluadorId":                   dataSource["id_evaluador"],
+		"ProcesoId":                     dataSource["proceso_id"],
+	}
+
+	var response map[string]interface{}
+	err := request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointFormulario, "POST", &response, nuevoFormulario)
+	if err == nil && response["Success"] == true {
+		return response["Data"].(map[string]interface{}), nil
+	}
+
+	// Segundo intento
+	var resp map[string]interface{}
+	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + "/formulario?sortby=Id&order=desc&limit=1&fields=Id"
+	if err := request.GetJson(url, &resp); err == nil && fmt.Sprintf("%v", resp["Data"]) != "[map[]]" {
+		nuevoFormulario["EvaluadorId"] = resp["Data"].([]interface{})[0].(map[string]interface{})["Id"]
+		err = request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointFormulario, "POST", &response, nuevoFormulario)
+		if err == nil {
+			return response["Data"].(map[string]interface{}), nil
+		}
+	}
+
+	return nil, fmt.Errorf("no se pudo crear el formulario: %w", err)
 }
 
 func InactivarFormulario(id int) error {
 	var formulario map[string]interface{}
-	err := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/"+fmt.Sprint(id), &formulario)
+	err := request.GetJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointFormulario+fmt.Sprint(id), &formulario)
 	if err != nil {
 		return fmt.Errorf("error al obtener el formulario con ID %d: %v", id, err)
 	}
 	formulario["Activo"] = false
-	err = request.SendJson("PUT", "http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/formulario/"+fmt.Sprint(id), formulario, nil)
+	err = request.SendJson("PUT", HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointFormulario+fmt.Sprint(id), formulario, nil)
 	if err != nil {
 		return fmt.Errorf("error al inactivar el formulario con ID %d: %v", id, err)
 	}
@@ -201,14 +465,14 @@ func InactivarFormulario(id int) error {
 
 func InactivarRespuesta(id int) error {
 	var respuesta map[string]interface{}
-	err := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/respuesta/"+fmt.Sprint(id), &respuesta)
+	err := request.GetJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointRespuesta+fmt.Sprint(id), &respuesta)
 	if err != nil {
 		return fmt.Errorf("error al obtener la respuesta con ID %d: %v", id, err)
 	}
 
 	respuesta["Activo"] = false
 
-	err = request.SendJson("PUT", "http://"+beego.AppConfig.String("EvaluacionDocenteService")+"/respuesta/"+fmt.Sprint(id), respuesta, nil)
+	err = request.SendJson("PUT", HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+EndpointRespuesta+fmt.Sprint(id), respuesta, nil)
 	if err != nil {
 		return fmt.Errorf("error al inactivar la respuesta con ID %d: %v", id, err)
 	}
@@ -216,8 +480,8 @@ func InactivarRespuesta(id int) error {
 	return nil
 }
 
-func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, error) {
-	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/?limit=0"
+/*func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, error) {
+	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/?limit=0"
 	var response map[string]interface{}
 	err := request.SendJson(url, "GET", &response, nil)
 	if err != nil {
@@ -237,10 +501,50 @@ func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, erro
 	}
 
 	return nil, fmt.Errorf("Plantilla no encontrada para el item_id: %v", itemID)
+}*/
+
+func ObtenerPlantillaPorItemID(itemID interface{}) (map[string]interface{}, error) {
+	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + "/plantilla/?limit=0"
+
+	var response map[string]interface{}
+	if err := request.SendJson(url, "GET", &response, nil); err != nil {
+		return nil, err
+	}
+
+	plantillas, ok := response["Data"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Formato inesperado en la respuesta del servicio")
+	}
+
+	for _, item := range plantillas {
+		if plantilla := ExtraerPlantillaSiCoincide(item, itemID); plantilla != nil {
+			return plantilla, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Plantilla no encontrada para el item_id: %v", itemID)
+}
+
+func ExtraerPlantillaSiCoincide(item interface{}, itemID interface{}) map[string]interface{} {
+	plantilla, ok := item.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	itemIDFromPlantilla, ok := plantilla["ItemId"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	if itemIDFromPlantilla["Id"] == itemID {
+		return plantilla
+	}
+
+	return nil
 }
 
 func VerificarRespuesta(formularioID int, plantillaID int) (APIResponseDTO requestresponse.APIResponse) {
-	url := "http://" + beego.AppConfig.String("EvaluacionDocenteService") + "formrespuesta?query=Activo:true,FormularioId.Id:" + fmt.Sprint(formularioID) + ",PlantillaId.Id:" + fmt.Sprint(plantillaID)
+	url := HttpPrefix + beego.AppConfig.String("EvaluacionDocenteService") + "formrespuesta?query=Activo:true,FormularioId.Id:" + fmt.Sprint(formularioID) + ",PlantillaId.Id:" + fmt.Sprint(plantillaID)
 	var response map[string]interface{}
 	err := request.GetJson(url, &response)
 	if err != nil {

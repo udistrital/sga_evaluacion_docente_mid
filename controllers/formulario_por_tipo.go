@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"encoding/json"
+
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/services"
 	"github.com/udistrital/utils_oas/errorhandler"
@@ -25,24 +27,32 @@ func (c *Formulario_por_tipoController) URLMapping() {
 // @Param	id_periodo	query	string	false	"Id del periodo"
 // @Param	id_tercero	query	string	false	"Id del tercero"
 // @Param	id_espacio	query	string	false	"Id del espacio"
+// @Param	id_grupo	query	string	false	"Id del grupo"
 // @Success 200 {}
 // @Failure 403 body is empty
 // @router / [get]
 func (c *Formulario_por_tipoController) GetFormularioTipo() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
-	id_tipo_formulario := c.GetString("id_tipo_formulario")
-	id_periodo := c.GetString("id_periodo")
-	id_tercero := c.GetString("id_tercero")
-	id_espacio := c.GetString("id_espacio")
+	idTipoFormulario := c.GetString("id_tipo_formulario")
+	idPeriodo := c.GetString("id_periodo")
+	idTercero := c.GetString("id_evaluador")
+	idEspacio := c.GetString("id_espacio")
+	idGrupo := c.GetString("id_grupo")
 
-	respuesta := services.ConsultaFormulario(id_tipo_formulario, id_periodo, id_tercero, id_espacio)
+	var respuesta requestresponse.APIResponse
+
+	// if id_tipo_formulario == "5" {
+	// 	respuesta = services.FormularioCoevaluacion(id_periodo, id_tercero, id_espacio)
+	// } else {
+	respuesta = services.ConsultaFormulario(idTipoFormulario, idPeriodo, idTercero, idEspacio, idGrupo)
+	// }
 
 	c.Ctx.Output.SetStatus(respuesta.Status)
-
 	c.Data["json"] = respuesta
 
 	c.ServeJSON()
+
 }
 
 // PostFormularioTipo ...
@@ -58,6 +68,23 @@ func (c *Formulario_por_tipoController) PostFormularioTipo() {
 	data := c.Ctx.Input.RequestBody
 
 	if data != nil {
+		var payload map[string]interface{}
+		err := json.Unmarshal(data, &payload)
+		if err != nil {
+			c.Ctx.Output.SetStatus(400)
+			c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Error al procesar datos")
+			c.ServeJSON()
+			return
+		}
+
+		if procesoID, ok := payload["proceso_id"].(float64); ok && int(procesoID) == 5 {
+			respuesta := services.CrearFormularioCo(data)
+			c.Ctx.Output.SetStatus(respuesta.Status)
+			c.Data["json"] = respuesta
+			c.ServeJSON()
+			return
+		}
+
 		respuesta := services.CrearFormulario(data)
 		c.Ctx.Output.SetStatus(respuesta.Status)
 		c.Data["json"] = respuesta
@@ -65,7 +92,7 @@ func (c *Formulario_por_tipoController) PostFormularioTipo() {
 
 	} else {
 		c.Ctx.Output.SetStatus(400)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Datos erroneos")
+		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Datos erróneos")
 		c.ServeJSON()
 	}
 }
