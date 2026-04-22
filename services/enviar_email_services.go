@@ -3,14 +3,14 @@ package services
 import (
 	"fmt"
 
+	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/models"
 	"github.com/udistrital/utils_oas/request"
 	"github.com/udistrital/utils_oas/requestresponse"
-	"encoding/json"
 )
 
-func EnviarEmail(to []string, source string, template string, templateData models.EmailTemplateData, attachments []models.EmailAttachment ) requestresponse.APIResponse {
+func EnviarEmail(to []string, source string, template string, templateData models.EmailTemplateData, attachments []models.EmailAttachment) requestresponse.APIResponse {
 	payload := models.EnvioEmailPayload{
 		Source:   source,
 		Template: template,

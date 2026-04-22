@@ -1,16 +1,17 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/udistrital/sga_evaluacion_docente_mid/services"
-	"github.com/udistrital/utils_oas/errorhandler"
-	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
-	"github.com/udistrital/sga_evaluacion_docente_mid/models"
-	"github.com/udistrital/utils_oas/request"
-	"github.com/udistrital/utils_oas/requestresponse"
+	"encoding/json"
 	"fmt"
 	"log"
-	"encoding/json"
+
+	"github.com/astaxie/beego"
+	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
+	"github.com/udistrital/sga_evaluacion_docente_mid/models"
+	"github.com/udistrital/sga_evaluacion_docente_mid/services"
+	"github.com/udistrital/utils_oas/errorhandler"
+	"github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/utils_oas/requestresponse"
 )
 
 // EnviarEmailController operations for EnviarEmail
@@ -106,7 +107,7 @@ func (c *EnviarEmailController) PostEnviarEmail() {
 
 func obtenerNombrePeriodo(periodoID int) (string, error) {
 	var resp map[string]interface{}
-	url := "http://"+beego.AppConfig.String("ParametrosService")+"/periodo/"+fmt.Sprintf("%d", periodoID)
+	url := beego.AppConfig.String("ParametrosService") + "/periodo/" + fmt.Sprintf("%d", periodoID)
 
 	if err := request.GetJson(url, &resp); err != nil {
 		return "", fmt.Errorf("no se pudo obtener el periodo desde el servicio: %w", err)

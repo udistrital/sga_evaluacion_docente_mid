@@ -47,7 +47,7 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	}
 
 	var response map[string]interface{}
-	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"]), &response)
+	errFormulario := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"]), &response)
 
 	type ItemPlantillaRespuesta struct {
 		ItemId             string                   `json:"item_id"`
@@ -61,7 +61,7 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	if errFormulario == nil {
 		if dataSource["campos"].(map[string]interface{})["componente"] != nil {
 			var camposResponse map[string]interface{}
-			errCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
+			errCampos := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
 			if errCampos == nil {
 				if camposResponse["Data"] != nil {
 					for _, campo := range camposResponse["Data"].([]interface{}) {
@@ -69,7 +69,7 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 						campoIds = append(campoIds, campoId)
 
 						var itemCampoResponse map[string]interface{}
-						errItemCampo := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0", campoId), &itemCampoResponse)
+						errItemCampo := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0", campoId), &itemCampoResponse)
 
 						if errItemCampo == nil {
 							if itemCampoResponse["Data"] != nil {
@@ -91,7 +91,7 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 
 		if dataSource["campos"].(map[string]interface{})["vinculacion"] != nil {
 			var vinculacionResponse map[string]interface{}
-			errVinculacion := request.GetJson("http://"+beego.AppConfig.String("PlanDocenteService")+fmt.Sprintf("plan_docente?query=tipo_vinculacion_id:%v&sortby=Id&order=asc&limit=0", dataSource["campos"].(map[string]interface{})["vinculacion"]), &vinculacionResponse)
+			errVinculacion := request.GetJson(beego.AppConfig.String("PlanDocenteService")+fmt.Sprintf("plan_docente?query=tipo_vinculacion_id:%v&sortby=Id&order=asc&limit=0", dataSource["campos"].(map[string]interface{})["vinculacion"]), &vinculacionResponse)
 
 			if errVinculacion == nil {
 				if data, ok := vinculacionResponse["Data"].(map[string]interface{}); ok {
@@ -131,7 +131,7 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		}
 
 		var plantillaResponse map[string]interface{}
-		errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
+		errPlantilla := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
 		if errPlantilla == nil {
 			if plantillaResponse["Data"] != nil {
 				for _, plantilla := range plantillaResponse["Data"].([]interface{}) {
@@ -144,7 +144,7 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 							plantillaIds = append(plantillaIds, plantillaId)
 
 							var formrespuestaResponse map[string]interface{}
-							errFormrespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
+							errFormrespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
 							if errFormrespuesta == nil {
 								var respuestasDetalle []map[string]interface{}
 								if formrespuestaResponse["Data"] != nil {
@@ -157,7 +157,7 @@ func ReporteGlobal(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 											respuestasIds = append(respuestasIds, respuestaId)
 
 											var respuestaDetalleResponse map[string]interface{}
-											errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&order=asc&limit=0", respuestaId), &respuestaDetalleResponse)
+											errRespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&order=asc&limit=0", respuestaId), &respuestaDetalleResponse)
 											if errRespuesta == nil {
 												if respuestaDetalleResponse["Data"] != nil {
 													respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})
@@ -229,7 +229,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		return APIResponseDTO
 	}
 	var resFacultad map[string]interface{}
-	errFacultad := request.GetJson("http://"+beego.AppConfig.String("ProyectoService")+fmt.Sprintf("proyecto-academico?sortby=Id&order=asc&limit=0&Activo=true"), &resFacultad)
+	errFacultad := request.GetJson(beego.AppConfig.String("ProyectoService")+fmt.Sprintf("proyecto-academico?sortby=Id&order=asc&limit=0&Activo=true"), &resFacultad)
 
 	if errFacultad == nil {
 
@@ -252,7 +252,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	}
 
 	var response map[string]interface{}
-	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"]), &response)
+	errFormulario := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"]), &response)
 
 	type ItemPlantillaRespuesta struct {
 		ItemId             string                   `json:"item_id"`
@@ -285,7 +285,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		if dataSource["campos"].(map[string]interface{})["componente"] != nil {
 
 			var camposResponse map[string]interface{}
-			errCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
+			errCampos := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
 			if errCampos == nil {
 
 				if camposResponse["Data"] != nil {
@@ -294,7 +294,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 						campoIds = append(campoIds, campoId)
 
 						var itemCampoResponse map[string]interface{}
-						errItemCampo := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0", campoId), &itemCampoResponse)
+						errItemCampo := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0", campoId), &itemCampoResponse)
 
 						if errItemCampo == nil {
 							if itemCampoResponse["Data"] != nil {
@@ -315,7 +315,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		}
 		if dataSource["campos"].(map[string]interface{})["vinculacion"] != nil {
 			var vinculacionResponse map[string]interface{}
-			errVinculacion := request.GetJson("http://"+beego.AppConfig.String("PlanDocenteService")+fmt.Sprintf("plan_docente?query=tipo_vinculacion_id:%v&sortby=Id&order=asc&limit=0", dataSource["campos"].(map[string]interface{})["vinculacion"]), &vinculacionResponse)
+			errVinculacion := request.GetJson(beego.AppConfig.String("PlanDocenteService")+fmt.Sprintf("plan_docente?query=tipo_vinculacion_id:%v&sortby=Id&order=asc&limit=0", dataSource["campos"].(map[string]interface{})["vinculacion"]), &vinculacionResponse)
 
 			if errVinculacion == nil {
 				if data, ok := vinculacionResponse["Data"].(map[string]interface{}); ok {
@@ -355,7 +355,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		}
 
 		var plantillaResponse map[string]interface{}
-		errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
+		errPlantilla := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
 		if errPlantilla == nil {
 			if plantillaResponse["Data"] != nil {
 				for _, plantilla := range plantillaResponse["Data"].([]interface{}) {
@@ -368,7 +368,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 							plantillaIds = append(plantillaIds, plantillaId)
 
 							var formrespuestaResponse map[string]interface{}
-							errFormrespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
+							errFormrespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
 							if errFormrespuesta == nil {
 
 								var respuestasDetalle []map[string]interface{}
@@ -382,7 +382,7 @@ func ReporteFacultad(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 											respuestasIds = append(respuestasIds, respuestaId)
 
 											var respuestaDetalleResponse map[string]interface{}
-											errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&limit=0", respuestaId), &respuestaDetalleResponse)
+											errRespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&limit=0", respuestaId), &respuestaDetalleResponse)
 											if errRespuesta == nil {
 												if respuestaDetalleResponse["Data"] != nil {
 													respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})
@@ -468,7 +468,7 @@ func ReporteEstudiante(data []byte) (APIResponseDTO requestresponse.APIResponse)
 	}
 
 	var response map[string]interface{}
-	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"], dataSource["estudiante_id"]), &response)
+	errFormulario := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"], dataSource["estudiante_id"]), &response)
 
 	type ItemPlantillaRespuesta struct {
 		ItemId             string                   `json:"item_id"`
@@ -484,7 +484,7 @@ func ReporteEstudiante(data []byte) (APIResponseDTO requestresponse.APIResponse)
 		if dataSource["campos"].(map[string]interface{})["componente"] != nil {
 
 			var camposResponse map[string]interface{}
-			errCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
+			errCampos := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
 			if errCampos == nil {
 
 				if camposResponse["Data"] != nil {
@@ -493,7 +493,7 @@ func ReporteEstudiante(data []byte) (APIResponseDTO requestresponse.APIResponse)
 						campoIds = append(campoIds, campoId)
 
 						var itemCampoResponse map[string]interface{}
-						errItemCampo := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true", campoId), &itemCampoResponse)
+						errItemCampo := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true", campoId), &itemCampoResponse)
 
 						if errItemCampo == nil {
 							if itemCampoResponse["Data"] != nil {
@@ -524,7 +524,7 @@ func ReporteEstudiante(data []byte) (APIResponseDTO requestresponse.APIResponse)
 		}
 
 		var plantillaResponse map[string]interface{}
-		errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
+		errPlantilla := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
 		if errPlantilla == nil {
 			if plantillaResponse["Data"] != nil {
 				for _, plantilla := range plantillaResponse["Data"].([]interface{}) {
@@ -537,7 +537,7 @@ func ReporteEstudiante(data []byte) (APIResponseDTO requestresponse.APIResponse)
 							plantillaIds = append(plantillaIds, plantillaId)
 
 							var formrespuestaResponse map[string]interface{}
-							errFormrespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
+							errFormrespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
 							if errFormrespuesta == nil {
 
 								var respuestasDetalle []map[string]interface{}
@@ -551,7 +551,7 @@ func ReporteEstudiante(data []byte) (APIResponseDTO requestresponse.APIResponse)
 											respuestasIds = append(respuestasIds, respuestaId)
 
 											var respuestaDetalleResponse map[string]interface{}
-											errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&limit=0", respuestaId), &respuestaDetalleResponse)
+											errRespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&limit=0", respuestaId), &respuestaDetalleResponse)
 											if errRespuesta == nil {
 												if respuestaDetalleResponse["Data"] != nil {
 													respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})
@@ -614,7 +614,7 @@ func ReporteDocente(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	}
 
 	var response map[string]interface{}
-	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"], dataSource["docente_id"]), &response)
+	errFormulario := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["periodo_id"], dataSource["docente_id"]), &response)
 
 	type ItemPlantillaRespuesta struct {
 		ItemId             string                   `json:"item_id"`
@@ -630,7 +630,7 @@ func ReporteDocente(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		if dataSource["campos"].(map[string]interface{})["componente"] != nil {
 
 			var camposResponse map[string]interface{}
-			errCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
+			errCampos := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=TipoCampoId:%v&sortby=Id&order=asc&limit=0&Activo=true", dataSource["campos"].(map[string]interface{})["componente"]), &camposResponse)
 			if errCampos == nil {
 
 				if camposResponse["Data"] != nil {
@@ -639,7 +639,7 @@ func ReporteDocente(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 						campoIds = append(campoIds, campoId)
 
 						var itemCampoResponse map[string]interface{}
-						errItemCampo := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0", campoId), &itemCampoResponse)
+						errItemCampo := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=CampoId:%s&Activo=true&limit=0", campoId), &itemCampoResponse)
 
 						if errItemCampo == nil {
 							if itemCampoResponse["Data"] != nil {
@@ -670,7 +670,7 @@ func ReporteDocente(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 		}
 
 		var plantillaResponse map[string]interface{}
-		errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
+		errPlantilla := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?sortby=Id&order=asc&limit=0"), &plantillaResponse)
 		if errPlantilla == nil {
 			if plantillaResponse["Data"] != nil {
 				for _, plantilla := range plantillaResponse["Data"].([]interface{}) {
@@ -683,7 +683,7 @@ func ReporteDocente(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 							plantillaIds = append(plantillaIds, plantillaId)
 
 							var formrespuestaResponse map[string]interface{}
-							errFormrespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
+							errFormrespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("formrespuesta?sortby=Id&order=asc&limit=0"), &formrespuestaResponse)
 							if errFormrespuesta == nil {
 
 								var respuestasDetalle []map[string]interface{}
@@ -697,7 +697,7 @@ func ReporteDocente(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 											respuestasIds = append(respuestasIds, respuestaId)
 
 											var respuestaDetalleResponse map[string]interface{}
-											errRespuesta := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&limit=0", respuestaId), &respuestaDetalleResponse)
+											errRespuesta := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("respuesta/%s&limit=0", respuestaId), &respuestaDetalleResponse)
 											if errRespuesta == nil {
 												if respuestaDetalleResponse["Data"] != nil {
 													respuestaDetalle := respuestaDetalleResponse["Data"].(map[string]interface{})

@@ -2,10 +2,11 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
-	"errors"
+
 	"github.com/astaxie/beego"
 	"github.com/udistrital/sga_evaluacion_docente_mid/helpers"
 	"github.com/udistrital/utils_oas/request"
@@ -17,19 +18,19 @@ import (
 
 	var formularioID int
 	var plantilla map[string]interface{}
-	errPlantilla := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?query=ProcesoId:%v&Activo:true&sortby=Id&order=asc&limit=0", id_tipo_formulario), &plantilla)
+	errPlantilla := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("plantilla?query=ProcesoId:%v&Activo:true&sortby=Id&order=asc&limit=0", id_tipo_formulario), &plantilla)
 	if errPlantilla != nil || fmt.Sprintf("%v", plantilla) == "[map[]]" {
 		return helpers.ErrEmiter(errPlantilla, fmt.Sprintf("%v", plantilla))
 	}
 
 	var itemCampos map[string]interface{}
-	errItemCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=Activo:true&sortby=Id&order=asc&limit=0"), &itemCampos)
+	errItemCampos := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("item_campo?query=Activo:true&sortby=Id&order=asc&limit=0"), &itemCampos)
 	if errItemCampos != nil || fmt.Sprintf("%v", itemCampos) == "[map[]]" {
 		return helpers.ErrEmiter(errItemCampos, fmt.Sprintf("%v", itemCampos))
 	}
 
 	var campos map[string]interface{}
-	errCampos := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=Activo:true&sortby=Id&order=asc&limit=0"), &campos)
+	errCampos := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("campo?query=Activo:true&sortby=Id&order=asc&limit=0"), &campos)
 	if errCampos != nil || fmt.Sprintf("%v", campos) == "[map[]]" {
 		return helpers.ErrEmiter(errCampos, fmt.Sprintf("%v", campos))
 	}
@@ -66,7 +67,7 @@ import (
 	fmt.Println("Query: ", query)
 
 	var res map[string]interface{}
-	errFormulario := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+query, &res)
+	errFormulario := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+query, &res)
 
 	if errFormulario == nil {
 		if data, ok := res["Data"].([]interface{}); ok && len(data) > 0 {
@@ -147,7 +148,7 @@ import (
 }*/
 
 const (
-	HttpPrefix = "http://"
+	HttpPrefix     = "http://"
 	EmptyMapString = "[map[]]"
 )
 
@@ -273,7 +274,6 @@ func mapearCamposPorItem(itemCamposData, camposData []interface{}) map[int][]map
 	return itemCamposMap
 }
 
-
 func verificarFormularioExistente(idPeriodo, idTercero, idEspacio, idTipoFormulario, idGrupo string) (int, error) {
 
 	//query := fmt.Sprintf("formulario?query=PeriodoId:%v,EvaluadoId:%v,EspacioAcademicoId:%v,PlantillaProcesoId:%v",
@@ -303,7 +303,7 @@ func verificarFormularioExistente(idPeriodo, idTercero, idEspacio, idTipoFormula
 func obtenerCampos() (map[string]interface{}, error) {
 	var campos map[string]interface{}
 	url := fmt.Sprintf("%s%s/campo?query=Activo:true&sortby=Id&order=asc&limit=0",
-		HttpPrefix,beego.AppConfig.String("EvaluacionDocenteService"))
+		HttpPrefix, beego.AppConfig.String("EvaluacionDocenteService"))
 	err := request.GetJson(url, &campos)
 	if err != nil || fmt.Sprintf("%v", campos) == EmptyMapString {
 		return nil, fmt.Errorf("error al obtener campos: %v", err)
@@ -332,7 +332,6 @@ func obtenerPlantilla(idTipoFormulario string) (map[string]interface{}, error) {
 	}
 	return plantilla, nil
 }
-
 
 func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]interface{} {
 	var hijos []map[string]interface{}
@@ -370,7 +369,6 @@ func obtenerCamposHijos(campoId int, camposData []interface{}) []map[string]inte
 
 	return hijos
 }
-
 
 func obtenerDescargaArchivos(idTercero string, idEspacio string, itemId string) map[string]interface{} {
 	formularioIds, err := obtenerFormulariosIds(idTercero)
@@ -502,7 +500,6 @@ func obtenerDocumentosDesdeRespuestas(respuestas []map[string]interface{}, formu
 	return documentos, nil
 }
 
-
 func CrearFormulario(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	var dataSource map[string]interface{}
 	var itemIDs, plantillaIDs []float64
@@ -624,7 +621,6 @@ func rollbackPlantillas(plantillaIDs []float64) {
 		request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("/plantilla/%v", id), "PUT", &inactivaPlantilla, plantillaData)
 	}
 }
-
 
 func FormularioCoevaluacion(idPeriodo, idTercero, idEspacio string) (APIResponseDTO requestresponse.APIResponse) {
 	formularioID := verificarFormularioExistenteDos(idPeriodo, idTercero, idEspacio)
@@ -784,7 +780,6 @@ func buscarSeccion(secciones []map[string]interface{}, id int) map[string]interf
 	return nil
 }
 
-
 func CrearFormularioCo(data []byte) (APIResponseDTO requestresponse.APIResponse) {
 	var dataSource map[string]interface{}
 	if err := json.Unmarshal(data, &dataSource); err != nil {
@@ -918,4 +913,3 @@ func revertirPlantillas(plantillaIDs []float64) {
 		_ = request.SendJson(HttpPrefix+beego.AppConfig.String("EvaluacionDocenteService")+fmt.Sprintf("/plantilla/%v", id), "PUT", &inactiva, plantillaData)
 	}
 }
-

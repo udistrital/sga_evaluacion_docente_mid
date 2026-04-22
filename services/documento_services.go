@@ -16,7 +16,7 @@ func ConsultarDocumentos(periodoId int, evaluadorId int) (APIResponseDTO request
 	var documentosBase64 []string
 
 	query := "respuesta/document_uuids/" + fmt.Sprintf("%d", periodoId) + "/" + fmt.Sprintf("%d", evaluadorId)
-	err1 := request.GetJson("http://"+beego.AppConfig.String("EvaluacionDocenteService")+query, &res)
+	err1 := request.GetJson(beego.AppConfig.String("EvaluacionDocenteService")+query, &res)
 	if err1 != nil {
 		APIResponseDTO = requestresponse.APIResponseDTO(false, 403, nil, fmt.Sprintf("Error al consultar documentos en api_crud: %v", err1))
 		return APIResponseDTO
@@ -30,7 +30,7 @@ func ConsultarDocumentos(periodoId int, evaluadorId int) (APIResponseDTO request
 			//se consultan los documentos por cada uno de los uuids con gestor documental mid
 			fmt.Println("UUID:", uuid)
 			query = "document/" + fmt.Sprintf("%s", uuid)
-			err2 := request.GetJson("http://"+beego.AppConfig.String("GestorDocumentalService")+query, &documento)
+			err2 := request.GetJson(beego.AppConfig.String("GestorDocumentalService")+query, &documento)
 			if err2 != nil {
 				APIResponseDTO = requestresponse.APIResponseDTO(false, 403, nil, fmt.Sprintf("Error al consultar uuids: %v", err1))
 				return APIResponseDTO
